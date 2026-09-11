@@ -1,0 +1,46 @@
+import '../../models/user.dart';
+
+/// Domain error thrown by [AuthRepository] implementations — providers catch
+/// this and surface the message to the UI (AGENT.md §7).
+class AuthException implements Exception {
+  const AuthException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+/// Contract for Module 1 — Authentication & Profile Management (AGENT.md §4.3).
+/// Methods align with the future REST endpoints in AGENT.md §5.
+abstract class AuthRepository {
+  /// 1.1 Login — validates credentials and returns the signed-in student.
+  /// Throws [AuthException] on invalid credentials.
+  Future<AppUser> login({required String email, required String password});
+
+  /// 1.2 Logout — ends the authenticated session.
+  Future<void> logout();
+
+  /// 1.3 Password Recovery — requests a password reset for the given email.
+  /// Throws [AuthException] if the email is not recognized.
+  Future<void> requestPasswordReset(String email);
+
+  /// 1.4 Profile Management — returns the current student's profile.
+  Future<AppUser> getProfile(String userId);
+
+  /// 1.4 Profile Management — updates basic profile info (name, email, photo).
+  Future<AppUser> updateProfile({
+    required String userId,
+    String? fullName,
+    String? email,
+    String? photoUrl,
+  });
+
+  /// 1.4 Profile Management — changes the password (requires the current one).
+  /// Throws [AuthException] when the current password is wrong.
+  Future<void> changePassword({
+    required String userId,
+    required String currentPassword,
+    required String newPassword,
+  });
+}
