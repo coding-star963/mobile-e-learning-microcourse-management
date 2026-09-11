@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../providers/auth_provider.dart';
 import '../../../providers/course_provider.dart';
 import '../../widgets/course_card.dart';
 
@@ -36,10 +37,32 @@ class _CatalogViewState extends State<CatalogView> {
   Widget build(BuildContext context) {
     final courseProvider = context.watch<CourseProvider>();
     final theme = Theme.of(context);
+    final user = context.watch<AuthProvider>().user;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Welcome header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hey ${user?.fullName.split(' ').first ?? 'there'} 👋',
+                style: theme.textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Find your next micro-course',
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colorScheme.outline),
+              ),
+            ],
+          ),
+        ),
+
         // 2.2 Search Courses
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -75,6 +98,7 @@ class _CatalogViewState extends State<CatalogView> {
               _categoryChip(
                 context,
                 label: 'All',
+                icon: Icons.apps_outlined,
                 categoryId: null,
                 selected: courseProvider.selectedCategoryId == null,
               ),
@@ -82,6 +106,7 @@ class _CatalogViewState extends State<CatalogView> {
                 _categoryChip(
                   context,
                   label: category.name,
+                  icon: _categoryIcon(category.id),
                   categoryId: category.id,
                   selected: courseProvider.selectedCategoryId == category.id,
                 ),
@@ -118,14 +143,31 @@ class _CatalogViewState extends State<CatalogView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off_outlined,
-                size: 56, color: theme.colorScheme.outline),
-            const SizedBox(height: 12),
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.search_off_outlined,
+                  size: 44, color: theme.colorScheme.outline),
+            ),
+            const SizedBox(height: 16),
             Text(
               courseProvider.searchQuery.isNotEmpty
                   ? 'No courses match your search.'
                   : 'No courses available right now.',
-              style: theme.textTheme.bodyLarge,
+              style: theme.textTheme.bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              courseProvider.searchQuery.isNotEmpty
+                  ? 'Try a different keyword.'
+                  : 'Check back soon for new micro-courses.',
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: theme.colorScheme.outline),
             ),
           ],
         ),
@@ -155,9 +197,11 @@ class _CatalogViewState extends State<CatalogView> {
   Widget _categoryChip(
     BuildContext context, {
     required String label,
+    required IconData icon,
     required String? categoryId,
     required bool selected,
   }) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: FilterChip(
@@ -165,7 +209,23 @@ class _CatalogViewState extends State<CatalogView> {
         selected: selected,
         onSelected: (_) =>
             context.read<CourseProvider>().selectCategory(categoryId),
+        avatar: Icon(
+          icon,
+          size: 16,
+          color: selected
+              ? theme.colorScheme.onPrimary
+              : theme.colorScheme.outline,
+        ),
       ),
     );
   }
+
+  /// Small icon per category id for friendlier scanning (2.3).
+  IconData _categoryIcon(String categoryId) => switch (categoryId) {
+        'cat-mobile-dev' => Icons.smartphone_outlined,
+        'cat-web-dev' => Icons.language_outlined,
+        'cat-data' => Icons.bar_chart_outlined,
+        'cat-design' => Icons.brush_outlined,
+        _ => Icons.category_outlined,
+      };
 }

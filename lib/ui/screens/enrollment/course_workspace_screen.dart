@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/theme.dart';
 import '../../../providers/course_provider.dart';
 
 /// 3.4 Access Enrolled Course — the enrolled-course workspace where the
@@ -15,7 +16,7 @@ class CourseWorkspaceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final courseProvider = context.watch<CourseProvider>();
-    final course = courseProvider.cachedCourseDetails(courseId);
+    final course = courseProvider.courseById(courseId);
     final lessonCount = course?.lessonIds.length ?? 0;
 
     return Scaffold(
@@ -26,13 +27,32 @@ class CourseWorkspaceScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.play_lesson_outlined,
-                  size: 72, color: theme.colorScheme.primary),
-              const SizedBox(height: 16),
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppTheme.seedColor, AppTheme.accentTeal],
+                  ),
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.seedColor.withValues(alpha: 0.3),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.play_lesson_outlined,
+                    size: 48, color: Colors.white),
+              ),
+              const SizedBox(height: 20),
               Text(
                 'You are enrolled in this course',
-                style: theme.textTheme.titleLarge,
-                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme.dart';
 import '../../models/course.dart';
 
 /// Reusable card for catalog lists: thumbnail, title, difficulty, and the
@@ -21,8 +22,6 @@ class CourseCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -32,10 +31,10 @@ class CourseCard extends StatelessWidget {
             children: [
               // Thumbnail (2.4)
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
-                  width: 96,
-                  height: 72,
+                  width: 104,
+                  height: 78,
                   child: Image.network(
                     course.thumbnailUrl ?? '',
                     fit: BoxFit.cover,
@@ -45,7 +44,7 @@ class CourseCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,22 +57,63 @@ class CourseCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      categoryName,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.outline),
-                    ),
-                    const SizedBox(height: 8),
                     Row(
                       children: [
-                        // Difficulty level (2.4)
-                        Chip(
-                          label: Text(course.difficultyLevel),
-                          visualDensity: VisualDensity.compact,
-                          padding: EdgeInsets.zero,
-                          labelStyle: theme.textTheme.labelSmall,
+                        Icon(Icons.category_outlined,
+                            size: 13, color: theme.colorScheme.outline),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            categoryName,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.outline,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        const SizedBox(width: 8),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        // Difficulty level (2.4) — color-coded dot + label.
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppTheme.difficultyColor(
+                              course.difficultyLevel,
+                            ).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.difficultyColor(
+                                    course.difficultyLevel,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                course.difficultyLevel,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: AppTheme.difficultyColor(
+                                    course.difficultyLevel,
+                                  ),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
                         // 2.5 View Course Status
                         _StatusChip(isPublished: course.isPublished),
                       ],
@@ -107,18 +147,36 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Chip(
-      label: Text(isPublished ? 'Open for enrollment' : 'Not available'),
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      labelStyle: theme.textTheme.labelSmall?.copyWith(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
         color: isPublished
-            ? theme.colorScheme.onPrimaryContainer
-            : theme.colorScheme.onErrorContainer,
+            ? theme.colorScheme.primaryContainer
+            : theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(999),
       ),
-      backgroundColor: isPublished
-          ? theme.colorScheme.primaryContainer
-          : theme.colorScheme.errorContainer,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isPublished ? Icons.check_circle_outline : Icons.lock_outline,
+            size: 12,
+            color: isPublished
+                ? theme.colorScheme.onPrimaryContainer
+                : theme.colorScheme.onErrorContainer,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isPublished ? 'Open' : 'Not available',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: isPublished
+                  ? theme.colorScheme.onPrimaryContainer
+                  : theme.colorScheme.onErrorContainer,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

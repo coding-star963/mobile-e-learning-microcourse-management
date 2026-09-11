@@ -168,11 +168,12 @@ void main() {
       // The progress card is the only Card on this screen.
 
       // 3.3 details: enrolled date, lessons completed, progress %.
+      // '100%' appears twice: info row + progress card header.
       expect(find.text('Enrolled on'), findsOneWidget);
       expect(find.text('Lessons completed'), findsOneWidget);
       expect(find.text('1 of 1'), findsOneWidget);
       expect(find.text('Progress'), findsOneWidget);
-      expect(find.text('100%'), findsOneWidget);
+      expect(find.text('100%'), findsNWidgets(2));
       expect(find.text('Course progress'), findsOneWidget);
     });
   });

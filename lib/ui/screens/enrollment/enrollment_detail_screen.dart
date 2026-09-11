@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/theme.dart';
 import '../../../models/course.dart';
 import '../../../models/enrollment.dart';
 import '../../../providers/auth_provider.dart';
@@ -144,15 +145,7 @@ class _EnrollmentContentView extends StatelessWidget {
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
-                    Chip(
-                      label: Text(
-                        enrollment.status == EnrollmentStatus.completed
-                            ? 'Completed'
-                            : 'In progress',
-                        style: theme.textTheme.labelSmall,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                    ),
+                    _StatusPill(status: enrollment.status),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -163,15 +156,18 @@ class _EnrollmentContentView extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _InfoRow(
+                  icon: Icons.event_outlined,
                   label: 'Enrolled on',
                   value: _formatDate(enrollment.enrolledAt),
                 ),
                 _InfoRow(
+                  icon: Icons.task_alt_outlined,
                   label: 'Lessons completed',
                   value:
                       '${enrollment.completedLessonIds.length} of $totalLessons',
                 ),
                 _InfoRow(
+                  icon: Icons.percent_outlined,
                   label: 'Progress',
                   value: '${(fraction * 100).round()}%',
                 ),
@@ -181,21 +177,49 @@ class _EnrollmentContentView extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // -- Progress bar (5.2/5.3 preview) ------------------------------
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: ProgressBar(
-            fraction: fraction,
-            label: 'Course progress',
+        // -- Progress card (5.2/5.3 preview) -----------------------------
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.insights_outlined,
+                        size: 18, color: AppTheme.accentTeal),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Course progress',
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${(fraction * 100).round()}%',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: AppTheme.accentTeal,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ProgressBar(fraction: fraction),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 24),
 
         // -- 3.4 Access Enrolled Course ----------------------------------
-        FilledButton.icon(
-          onPressed: onContinue,
-          icon: const Icon(Icons.play_arrow_outlined),
-          label: const Text('Continue learning'),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: onContinue,
+            icon: const Icon(Icons.play_arrow_outlined),
+            label: const Text('Continue learning'),
+          ),
         ),
       ],
     );
@@ -208,9 +232,41 @@ class _EnrollmentContentView extends StatelessWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
+/// Status pill matching the My Courses card style.
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.status});
 
+  final EnrollmentStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final completed = status == EnrollmentStatus.completed;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: completed
+            ? theme.colorScheme.primaryContainer
+            : theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        completed ? 'Completed' : 'In progress',
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: completed
+              ? theme.colorScheme.onPrimaryContainer
+              : theme.colorScheme.onSecondaryContainer,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.icon, required this.label, required this.value});
+
+  final IconData icon;
   final String label;
   final String value;
 
@@ -220,9 +276,10 @@ class _InfoRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: theme.textTheme.bodyMedium),
+          Icon(icon, size: 16, color: theme.colorScheme.outline),
+          const SizedBox(width: 8),
+          Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
           Text(
             value,
             style: theme.textTheme.bodyMedium

@@ -171,11 +171,11 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // 2.4 fields visible in the header: title (app bar + header), status
-      // chip (2.5), category, and difficulty. Category and difficulty share
-      // one combined line, so match by substring.
-      expect(find.text('Intro to Flutter'), findsNWidgets(2));
-      expect(find.text('Open for enrollment'), findsOneWidget);
+      // 2.4 fields visible in the header: title (sliver bar + hero + content
+      // header), status chip (2.5), category, and difficulty. Category and
+      // difficulty share one combined line, so match by substring.
+      expect(find.text('Intro to Flutter'), findsNWidgets(3));
+      expect(find.text('Open'), findsOneWidget);
       expect(find.textContaining('Mobile Development'), findsWidgets);
       expect(find.textContaining('beginner'), findsWidgets);
 
@@ -242,7 +242,8 @@ void main() {
       await tester.tap(find.text('Intro to Flutter'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Open for enrollment'), findsOneWidget);
+      // 2.5 status badge on the detail page (shortened label in the new UI).
+      expect(find.text('Open'), findsOneWidget);
     });
   });
 }

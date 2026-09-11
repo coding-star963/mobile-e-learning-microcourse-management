@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/auth_provider.dart';
+import '../../../providers/enrollment_provider.dart';
 import '../../screens/course/catalog_view.dart';
 import '../../screens/enrollment/my_courses_screen.dart';
 
@@ -21,6 +22,8 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final enrollmentCount =
+        context.watch<EnrollmentProvider>().enrollments.length;
 
     return Scaffold(
       appBar: AppBar(
@@ -50,15 +53,19 @@ class _HomeShellState extends State<HomeShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tabIndex,
         onDestinationSelected: (index) => setState(() => _tabIndex = index),
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.explore_outlined),
             selectedIcon: Icon(Icons.explore),
             label: 'Courses',
           ),
           NavigationDestination(
-            icon: Icon(Icons.bookmark_border_outlined),
-            selectedIcon: Icon(Icons.bookmark),
+            icon: Badge(
+              label: Text('$enrollmentCount'),
+              isLabelVisible: enrollmentCount > 0,
+              child: const Icon(Icons.bookmark_border_outlined),
+            ),
+            selectedIcon: const Icon(Icons.bookmark),
             label: 'My Courses',
           ),
         ],

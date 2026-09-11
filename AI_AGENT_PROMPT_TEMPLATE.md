@@ -99,7 +99,7 @@ test/[screen]_widget_test.dart
 
 Pre-filled §1 + §2 blocks below — paste one into a fresh copy of §1–§8 and send it to the agent:
 
-### Sprint 1 — Module 1: Authentication & Profile (1.1–1.4)
+### Sprint 1 — Module 1: Authentication & Profile (1.1–1.4) DONE
 - **Task title:** Build login, logout, password recovery, and profile screens backed by the mock auth repository
 - **Module / Function ID:** 1.1, 1.2, 1.3, 1.4
 - **Acceptance criteria:**
@@ -108,7 +108,7 @@ Pre-filled §1 + §2 blocks below — paste one into a fresh copy of §1–§8 a
   - Password recovery shows a mock "reset link sent" confirmation flow
   - Profile screen displays the demo student and allows editing name/email in memory
 
-### Sprint 2 — Module 2: Course Discovery & Browsing (2.1–2.5)
+### Sprint 2 — Module 2: Course Discovery & Browsing (2.1–2.5) DONE
 - **Task title:** Build the course catalog with search, category filtering, course details, and status badges on mock data
 - **Module / Function ID:** 2.1, 2.2, 2.3, 2.4, 2.5
 - **Acceptance criteria:**
@@ -117,7 +117,7 @@ Pre-filled §1 + §2 blocks below — paste one into a fresh copy of §1–§8 a
   - Tapping a category chip filters the list (2.3)
   - Course detail page shows title, description, category, objectives, difficulty, thumbnail, and lessons (2.4)
 
-### Sprint 3 — Module 3: Course Enrollment (3.1–3.4)
+### Sprint 3 — Module 3: Course Enrollment (3.1–3.4) DONE
 - **Task title:** Build enroll action and the My Courses list backed by the mock enrollment repository
 - **Module / Function ID:** 3.1, 3.2, 3.3, 3.4
 - **Acceptance criteria:**

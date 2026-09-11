@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants.dart';
+import '../../../core/theme.dart';
 import '../../../providers/auth_provider.dart';
 
 /// 1.1 Login — secure access using registered credentials.
@@ -51,17 +52,35 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.school_outlined,
-                    size: 72,
-                    color: theme.colorScheme.primary,
+                  // -- Brand header -----------------------------------------
+                  Container(
+                    width: 84,
+                    height: 84,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppTheme.seedColor, AppTheme.accentTeal],
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.seedColor.withValues(alpha: 0.35),
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.school_outlined,
+                        size: 44, color: Colors.white),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 20),
                   Text(
                     AppConstants.appName,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                   Text(
                     AppConstants.appTagline,
@@ -70,6 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ?.copyWith(color: theme.colorScheme.outline),
                   ),
                   const SizedBox(height: 32),
+
+                  // -- Form -------------------------------------------------
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -108,28 +129,45 @@ class _LoginScreenState extends State<LoginScreen> {
                     validator: (value) =>
                         (value == null || value.isEmpty) ? 'Enter your password.' : null,
                   ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: auth.isLoading
-                          ? null
-                          : () => Navigator.of(context).pushNamed('/forgot-password'),
-                      child: const Text('Forgot password?'),
-                    ),
+
+                  // 1.1 inline error banner
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    alignment: Alignment.topCenter,
+                    child: auth.error != null
+                        ? Container(
+                            margin: const EdgeInsets.only(top: 16),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.errorContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline,
+                                    size: 18,
+                                    color: theme.colorScheme.onErrorContainer),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    auth.error!,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onErrorContainer,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox(width: double.infinity),
                   ),
-                  if (auth.error != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      auth.error!,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.error),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                  const SizedBox(height: 8),
+
+                  const SizedBox(height: 24),
                   FilledButton(
                     onPressed: auth.isLoading ? null : _submit,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
                     child: auth.isLoading
                         ? const SizedBox(
                             width: 20,
@@ -138,12 +176,32 @@ class _LoginScreenState extends State<LoginScreen> {
                           )
                         : const Text('Log in'),
                   ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    // 1.3 Password Recovery entry point.
+                    onPressed: auth.isLoading
+                        ? null
+                        : () => Navigator.of(context).pushNamed('/forgot-password'),
+                    child: const Text('Forgot password?'),
+                  ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Demo account: ${AppConstants.demoEmail} / ${AppConstants.demoPassword}',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.colorScheme.outline),
+
+                  // Demo hint pill (mock phase, AGENT.md §6)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer
+                          .withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      'Demo account: ${AppConstants.demoEmail} · ${AppConstants.demoPassword}',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onPrimaryContainer,
+                      ),
+                    ),
                   ),
                 ],
               ),
