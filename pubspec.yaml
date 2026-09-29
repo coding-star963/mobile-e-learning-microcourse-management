@@ -38,6 +38,12 @@ dependencies:
   # State management (see AGENT.md §2) — required by all providers.
   provider: ^6.1.2
 
+  # Networking for REST API integration
+  http: ^1.2.2
+
+  # Local persistence for token and network configuration
+  shared_preferences: ^2.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

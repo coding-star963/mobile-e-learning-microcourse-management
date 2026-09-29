@@ -27,7 +27,7 @@ class MockCourseRepository implements CourseRepository {
   Future<List<Course>> searchCourses(String query) async {
     await Future<void>.delayed(AppConstants.mockLatency);
     final q = query.toLowerCase().trim();
-    if (q.isEmpty) return getPublishedCourses();
+    if (q.isEmpty) return MockData.courses.where((c) => c.isPublished).toList();
     return MockData.courses.where((c) {
       if (!c.isPublished) return false;
       final haystack = [

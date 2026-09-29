@@ -10,18 +10,42 @@ class Enrollment {
     this.status = EnrollmentStatus.active,
   });
 
-  factory Enrollment.fromJson(Map<String, dynamic> json) => Enrollment(
-        id: json['id'] as String,
-        studentId: json['studentId'] as String,
-        courseId: json['courseId'] as String,
-        enrolledAt: DateTime.parse(json['enrolledAt'] as String),
-        completedLessonIds: List<String>.from(
-          json['completedLessonIds'] as List? ?? const [],
-        ),
-        status: json['status'] == null
-            ? EnrollmentStatus.active
-            : EnrollmentStatus.values.byName(json['status'] as String),
-      );
+  factory Enrollment.fromJson(Map<String, dynamic> json) {
+    DateTime parsedEnrolledAt;
+    final rawDate = json['enrolledAt'] ?? json['enrolled_at'] ?? json['created_at'];
+    if (rawDate is String) {
+      parsedEnrolledAt = DateTime.tryParse(rawDate) ?? DateTime.now();
+    } else {
+      parsedEnrolledAt = DateTime.now();
+    }
+
+    EnrollmentStatus parsedStatus = EnrollmentStatus.active;
+    final rawStatus = json['status']?.toString().toLowerCase();
+    if (rawStatus == 'completed') {
+      parsedStatus = EnrollmentStatus.completed;
+    }
+
+    return Enrollment(
+      id: json['id']?.toString() ?? '',
+      studentId: (json['studentId'] ??
+              json['user_id'] ??
+              (json['user'] is Map ? json['user']['id'] : null))
+          ?.toString() ??
+          '',
+      courseId: (json['courseId'] ??
+              json['course_id'] ??
+              (json['course'] is Map ? json['course']['id'] : null))
+          ?.toString() ??
+          '',
+      enrolledAt: parsedEnrolledAt,
+      completedLessonIds: List<String>.from(
+        (json['completedLessonIds'] ?? json['completed_lesson_ids'] as List?)
+                ?.map((e) => e.toString()) ??
+            const [],
+      ),
+      status: parsedStatus,
+    );
+  }
 
   final String id;
   final String studentId;

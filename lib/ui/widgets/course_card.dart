@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../models/course.dart';
 
-/// Reusable card for catalog lists: thumbnail, title, difficulty, and the
-/// course status (2.5). Tapping opens the course detail page (2.4).
+/// Luxury Course Card for catalog lists and discovery.
 class CourseCard extends StatelessWidget {
   const CourseCard({
     super.key,
@@ -19,163 +18,158 @@ class CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Card(
+      margin: const EdgeInsets.only(bottom: 14),
+      color: AppTheme.bgCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: AppTheme.borderGold.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(14),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Thumbnail (2.4)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  width: 104,
-                  height: 78,
-                  child: Image.network(
-                    course.thumbnailUrl ?? '',
-                    fit: BoxFit.cover,
-                    loadingBuilder: (_, child, progress) =>
-                        progress == null ? child : _thumbPlaceholder(theme),
-                    errorBuilder: (_, _, _) => _thumbPlaceholder(theme),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Thumbnail with Luxury Rounded Corners
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: 106,
+                    height: 84,
+                    color: AppTheme.bgSurface,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (course.thumbnailUrl != null &&
+                            course.thumbnailUrl!.isNotEmpty)
+                          Image.network(
+                            course.thumbnailUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) =>
+                                _thumbPlaceholder(),
+                          )
+                        else
+                          _thumbPlaceholder(),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.5),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      course.title,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.category_outlined,
-                            size: 13, color: theme.colorScheme.outline),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            categoryName,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.outline,
+                const SizedBox(width: 16),
+
+                // Course Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        course.title,
+                        style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          height: 1.25,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.category_outlined,
+                              size: 13, color: AppTheme.goldLight),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              categoryName,
+                              style: const TextStyle(
+                                color: AppTheme.goldLight,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        // Difficulty level (2.4) — color-coded dot + label.
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppTheme.difficultyColor(
-                              course.difficultyLevel,
-                            ).withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.difficultyColor(
-                                    course.difficultyLevel,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          // Difficulty Pill
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppTheme.difficultyColor(
                                 course.difficultyLevel,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: AppTheme.difficultyColor(
-                                    course.difficultyLevel,
-                                  ),
-                                  fontWeight: FontWeight.w600,
+                              ).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              course.difficultyLevel.toUpperCase(),
+                              style: TextStyle(
+                                color: AppTheme.difficultyColor(
+                                  course.difficultyLevel,
                                 ),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.6,
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                        const Spacer(),
-                        // 2.5 View Course Status
-                        _StatusChip(isPublished: course.isPublished),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 8),
+
+                          // Module count
+                          if (course.lessonIds.isNotEmpty)
+                            Text(
+                              '${course.lessonIds.length} modules',
+                              style: const TextStyle(
+                                color: AppTheme.textMuted,
+                                fontSize: 11,
+                              ),
+                            ),
+                          const Spacer(),
+                          const Icon(Icons.arrow_forward_ios,
+                              size: 13, color: AppTheme.goldPrimary),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
           ),
         ),
       ),
     );
   }
 
-  Widget _thumbPlaceholder(ThemeData theme) => ColoredBox(
-        color: theme.colorScheme.surfaceContainerHighest,
+  Widget _thumbPlaceholder() {
+    return Container(
+      color: const Color(0xFF192235),
+      child: const Center(
         child: Icon(
           Icons.school_outlined,
-          color: theme.colorScheme.outline,
+          size: 32,
+          color: AppTheme.goldPrimary,
         ),
-      );
-}
-
-/// 2.5 View Course Status — shows whether the course is available for
-/// enrollment or learning.
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.isPublished});
-
-  final bool isPublished;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isPublished
-            ? theme.colorScheme.primaryContainer
-            : theme.colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isPublished ? Icons.check_circle_outline : Icons.lock_outline,
-            size: 12,
-            color: isPublished
-                ? theme.colorScheme.onPrimaryContainer
-                : theme.colorScheme.onErrorContainer,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            isPublished ? 'Open' : 'Not available',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: isPublished
-                  ? theme.colorScheme.onPrimaryContainer
-                  : theme.colorScheme.onErrorContainer,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }

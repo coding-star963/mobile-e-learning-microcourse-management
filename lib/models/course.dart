@@ -15,17 +15,36 @@ class Course {
   });
 
   factory Course.fromJson(Map<String, dynamic> json) => Course(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        description: json['description'] as String,
-        categoryId: json['categoryId'] as String,
-        objectives: List<String>.from(json['objectives'] as List),
-        difficultyLevel: json['difficultyLevel'] as String,
-        isPublished: json['isPublished'] as bool,
-        lessonIds: List<String>.from(json['lessonIds'] as List),
-        thumbnailUrl: json['thumbnailUrl'] as String?,
-        keywords:
-            json['keywords'] == null ? const [] : List<String>.from(json['keywords'] as List),
+        id: json['id']?.toString() ?? '',
+        title: (json['title'] ?? '') as String,
+        description: (json['description'] ?? '') as String,
+        categoryId: (json['categoryId'] ??
+                (json['category'] != null && json['category'] is Map
+                    ? json['category']['id']
+                    : null) ??
+                json['category_id'])
+            ?.toString() ??
+            '',
+        objectives: json['objectives'] != null
+            ? List<String>.from(json['objectives'] as List)
+            : const [],
+        difficultyLevel: (json['difficultyLevel'] ??
+                json['difficulty_level'] ??
+                'beginner') as String,
+        isPublished: (json['isPublished'] ??
+                json['is_published'] ??
+                (json['status'] == 'published')) as bool,
+        lessonIds: json['lessonIds'] != null
+            ? List<String>.from(
+                (json['lessonIds'] as List).map((e) => e.toString()))
+            : (json['lessons'] != null && json['lessons'] is List
+                ? List<String>.from((json['lessons'] as List)
+                    .map((l) => (l is Map ? l['id'] : l).toString()))
+                : const []),
+        thumbnailUrl: (json['thumbnailUrl'] ?? json['thumbnail']) as String?,
+        keywords: json['keywords'] != null
+            ? List<String>.from(json['keywords'] as List)
+            : const [],
       );
 
   final String id;

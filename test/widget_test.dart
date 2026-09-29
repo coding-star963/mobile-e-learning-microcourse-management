@@ -246,4 +246,50 @@ void main() {
       expect(find.text('Current password is incorrect.'), findsOneWidget);
     });
   });
+
+  group('Navigation & Login UI', () {
+    testWidgets('does not display Server Configuration on the login screen',
+        (tester) async {
+      await tester.pumpWidget(appUnderTest());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Server Configuration'), findsNothing);
+      expect(find.byIcon(Icons.dns_outlined), findsNothing);
+      expect(find.widgetWithText(FilledButton, 'Log in'), findsOneWidget);
+    });
+
+    testWidgets(
+        'navigating back from profile and course details returns to home, not login',
+        (tester) async {
+      await tester.pumpWidget(appUnderTest());
+      await tester.pumpAndSettle();
+
+      // 1. Log in
+      await typeCredentials(tester);
+      await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
+      await tester.pumpAndSettle();
+      expect(find.text('MicroLearn'), findsOneWidget);
+
+      // 2. Go to Profile
+      await tester.tap(find.byTooltip('My profile'));
+      await tester.pumpAndSettle();
+      expect(find.text('My Profile'), findsOneWidget);
+
+      // 3. Back from Profile
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      // MUST be on HomeShell, NOT on LoginScreen
+      expect(find.text('MicroLearn'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Log in'), findsNothing);
+
+      // 4. Logout should properly take user back to LoginScreen
+      await tester.tap(find.byTooltip('Log out'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Log out'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(FilledButton, 'Log in'), findsOneWidget);
+    });
+  });
 }

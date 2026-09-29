@@ -118,4 +118,13 @@ class CourseProvider extends ChangeNotifier {
     }
     return categoryId;
   }
+
+  CourseCategory? categoryById(String categoryId) {
+    for (final category in categories) {
+      if (category.id == categoryId) return category;
+    }
+    return null;
+  }
+
+  Future<void> filterByCategory(String? categoryId) => selectCategory(categoryId);
 }

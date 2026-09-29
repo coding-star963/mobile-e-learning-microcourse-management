@@ -19,6 +19,8 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => status == AuthStatus.authenticating ||
       status == AuthStatus.submitting;
 
+  bool get isAuthenticated => user != null;
+
   /// 1.1 Login — validates credentials and enters the app on success.
   Future<bool> login(String email, String password) async {
     _setBusy(AuthStatus.authenticating);
@@ -30,6 +32,9 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } on AuthException catch (e) {
       _fail(e.message);
+      return false;
+    } catch (e) {
+      _fail(e.toString());
       return false;
     }
   }
@@ -59,6 +64,9 @@ class AuthProvider extends ChangeNotifier {
     } on AuthException catch (e) {
       _fail(e.message);
       return false;
+    } catch (e) {
+      _fail(e.toString());
+      return false;
     }
   }
 
@@ -69,12 +77,15 @@ class AuthProvider extends ChangeNotifier {
     _setBusy(AuthStatus.submitting);
     try {
       user = await _authRepository.getProfile(current.id);
-      status = AuthStatus.authenticated;
       error = null;
     } on AuthException catch (e) {
       error = e.message;
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      status = AuthStatus.authenticated;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   /// 1.4 Profile Management — updates name/email/photo in memory.
@@ -93,13 +104,20 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         photoUrl: photoUrl,
       );
-      status = AuthStatus.authenticated;
       error = null;
+      status = AuthStatus.authenticated;
       notifyListeners();
       return true;
     } on AuthException catch (e) {
       _fail(e.message);
       return false;
+    } catch (e) {
+      _fail(e.toString());
+      return false;
+    } finally {
+      if (status != AuthStatus.unauthenticated) {
+        status = AuthStatus.authenticated;
+      }
     }
   }
 
@@ -118,11 +136,19 @@ class AuthProvider extends ChangeNotifier {
         newPassword: newPassword,
       );
       error = null;
+      status = AuthStatus.authenticated;
       notifyListeners();
       return true;
     } on AuthException catch (e) {
       _fail(e.message);
       return false;
+    } catch (e) {
+      _fail(e.toString());
+      return false;
+    } finally {
+      if (status != AuthStatus.unauthenticated) {
+        status = AuthStatus.authenticated;
+      }
     }
   }
 

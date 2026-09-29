@@ -8,6 +8,7 @@ import '../../core/constants.dart';
 import '../../models/course.dart';
 import '../../models/course_category.dart';
 import '../../models/enrollment.dart';
+import '../../models/lesson.dart';
 import '../../models/user.dart';
 
 class MockData {
@@ -240,4 +241,233 @@ class MockData {
     },
   ];
 
+  // ===========================================================================
+  // Module 4 — Lesson & Learning Content seeds (4.1–4.6)
+  // ===========================================================================
+
+  static final List<Map<String, dynamic>> lessonJson = [
+    {
+      'id': 'lesson-001',
+      'course_id': 'course-001',
+      'title': '1. Welcome to Flutter Architecture',
+      'description':
+          'Get an executive breakdown of the Flutter framework: widgets, element tree, render objects, and the reactive state loop.',
+      'status': 'published',
+      'availability': 'free',
+      'order': 1,
+      'video_url': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      'audio_url': null,
+      'duration_seconds': 480,
+      'duration_formatted': '8 min',
+      'is_free_preview': true,
+      'resources': [
+        {
+          'id': 'res-001',
+          'name': 'Flutter-CheatSheet-v3.pdf',
+          'file_url': 'https://example.com/flutter-cheatsheet.pdf',
+          'file_type': 'pdf',
+          'file_size': 2450000,
+          'order': 1,
+        },
+        {
+          'id': 'res-002',
+          'name': 'Starter-Code-Project.zip',
+          'file_url': 'https://example.com/starter.zip',
+          'file_type': 'zip',
+          'file_size': 5120000,
+          'order': 2,
+        },
+      ],
+    },
+    {
+      'id': 'lesson-002',
+      'course_id': 'course-001',
+      'title': '2. High-Performance Widgets & Layouts',
+      'description':
+          'Learn to craft breathtaking user interfaces with zero jank using Flex, Stack, and CustomMultiChildLayout widgets.',
+      'status': 'published',
+      'availability': 'free',
+      'order': 2,
+      'video_url': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+      'audio_url': 'https://example.com/audio/lesson2.mp3',
+      'duration_seconds': 720,
+      'duration_formatted': '12 min',
+      'is_free_preview': false,
+      'resources': [
+        {
+          'id': 'res-003',
+          'name': 'Layout-Architecture-Guide.pdf',
+          'file_url': 'https://example.com/layout-guide.pdf',
+          'file_type': 'pdf',
+          'file_size': 3100000,
+          'order': 1,
+        },
+      ],
+    },
+    {
+      'id': 'lesson-003',
+      'course_id': 'course-002',
+      'title': '1. Dart Concurrency: Isolates & Message Passing',
+      'description':
+          'Master true parallelism in Dart. Offload heavy computation from the UI thread using isolate spawning and ports.',
+      'status': 'published',
+      'availability': 'free',
+      'order': 1,
+      'video_url': null,
+      'audio_url': 'https://example.com/audio/isolates.mp3',
+      'duration_seconds': 900,
+      'duration_formatted': '15 min',
+      'is_free_preview': true,
+      'resources': [
+        {
+          'id': 'res-004',
+          'name': 'Isolates-Deep-Dive.pdf',
+          'file_url': 'https://example.com/isolates.pdf',
+          'file_type': 'pdf',
+          'file_size': 1800000,
+          'order': 1,
+        },
+      ],
+    },
+    {
+      'id': 'lesson-004',
+      'course_id': 'course-003',
+      'title': '1. Semantic HTML & Accessible Structure',
+      'description':
+          'Structure web applications for maximum accessibility, search engine indexing, and screen reader compatibility.',
+      'status': 'published',
+      'availability': 'free',
+      'order': 1,
+      'video_url': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+      'audio_url': null,
+      'duration_seconds': 540,
+      'duration_formatted': '9 min',
+      'is_free_preview': true,
+      'resources': [],
+    },
+    {
+      'id': 'lesson-005',
+      'course_id': 'course-003',
+      'title': '2. Modern CSS & Grid Mastery',
+      'description':
+          'Build responsive, responsive 2D layouts using CSS Grid and subgrid without unnecessary container divs.',
+      'status': 'published',
+      'availability': 'free',
+      'order': 2,
+      'video_url': null,
+      'audio_url': null,
+      'duration_seconds': 600,
+      'duration_formatted': '10 min',
+      'is_free_preview': false,
+      'resources': [
+        {
+          'id': 'res-005',
+          'name': 'CSS-Grid-Blueprint.pdf',
+          'file_url': 'https://example.com/grid.pdf',
+          'file_type': 'pdf',
+          'file_size': 1200000,
+          'order': 1,
+        },
+      ],
+    },
+    {
+      'id': 'lesson-006',
+      'course_id': 'course-003',
+      'title': '3. Responsive Typography & Media Queries',
+      'description':
+          'Create fluid layouts that adapt smoothly from smartphones to 4K desktop displays using clamp() and container queries.',
+      'status': 'published',
+      'availability': 'locked',
+      'order': 3,
+      'video_url': null,
+      'audio_url': null,
+      'duration_seconds': 800,
+      'duration_formatted': '13 min',
+      'is_free_preview': false,
+      'resources': [],
+    },
+    {
+      'id': 'lesson-007',
+      'course_id': 'course-004',
+      'title': '1. The Visual Hierarchy of Data',
+      'description':
+          'Design dashboards that communicate insights in seconds. Apply visual weights, color psychology, and gestalt principles.',
+      'status': 'published',
+      'availability': 'free',
+      'order': 1,
+      'video_url': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+      'audio_url': null,
+      'duration_seconds': 660,
+      'duration_formatted': '11 min',
+      'is_free_preview': true,
+      'resources': [],
+    },
+    {
+      'id': 'lesson-008',
+      'course_id': 'course-005',
+      'title': '1. Qualitative User Interview Fundamentals',
+      'description':
+          'Discover unstated user pain points without asking leading questions. Master active listening and script crafting.',
+      'status': 'published',
+      'availability': 'free',
+      'order': 1,
+      'video_url': null,
+      'audio_url': 'https://example.com/audio/ux-interviews.mp3',
+      'duration_seconds': 450,
+      'duration_formatted': '7 min',
+      'is_free_preview': true,
+      'resources': [],
+    },
+    {
+      'id': 'lesson-009',
+      'course_id': 'course-005',
+      'title': '2. Usability Testing & Synthesis',
+      'description':
+          'Record behavioral friction, map heatmaps, and translate observed obstacles into ranked product improvements.',
+      'status': 'published',
+      'availability': 'locked',
+      'order': 2,
+      'video_url': null,
+      'audio_url': null,
+      'duration_seconds': 580,
+      'duration_formatted': '9 min',
+      'is_free_preview': false,
+      'resources': [],
+    },
+    {
+      'id': 'lesson-010',
+      'course_id': 'course-006',
+      'title': '1. Microservices & Cold Starts',
+      'description': 'Under preparation for upcoming release.',
+      'status': 'draft',
+      'availability': 'locked',
+      'order': 1,
+      'video_url': null,
+      'audio_url': null,
+      'duration_seconds': 300,
+      'duration_formatted': '5 min',
+      'is_free_preview': false,
+      'resources': [],
+    },
+  ];
+
+  /// Fresh [Lesson] copies for a course, sorted by order (4.1, 4.5).
+  static List<Lesson> lessonsForCourse(String courseId) {
+    final list = lessonJson
+        .where((l) => l['course_id'] == courseId)
+        .map(Lesson.fromJson)
+        .toList();
+    list.sort((a, b) => a.order.compareTo(b.order));
+    return list;
+  }
+
+  /// Fresh [Lesson] copy for a single lesson id (4.2).
+  static Lesson? lessonById(String lessonId) {
+    final match = lessonJson.firstWhere(
+      (l) => l['id'] == lessonId,
+      orElse: () => const {},
+    );
+    if (match.isEmpty) return null;
+    return Lesson.fromJson(match);
+  }
 }

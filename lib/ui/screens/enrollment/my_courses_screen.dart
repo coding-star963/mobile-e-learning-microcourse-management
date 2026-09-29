@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/theme.dart';
 import '../../../models/enrollment.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/course_provider.dart';
 import '../../../providers/enrollment_provider.dart';
+import '../../../providers/lesson_provider.dart';
 import '../../widgets/progress_bar.dart';
 
-/// 3.2 View Enrolled Courses — the student's enrollments with progress and
-/// status. Body-only widget: embedded as the home shell's "My Courses" tab
-/// and wrapped by [MyCoursesPage] for the standalone route. Tapping opens
-/// the enrollment details (3.3).
+/// 3.2 Luxury Enrolled Courses View.
+/// Displays student enrollments, module completion metrics, and learning pathways.
 class MyCoursesScreen extends StatefulWidget {
   const MyCoursesScreen({super.key});
 
@@ -18,14 +18,13 @@ class MyCoursesScreen extends StatefulWidget {
   State<MyCoursesScreen> createState() => _MyCoursesScreenState();
 }
 
-/// Standalone route wrapper for [MyCoursesScreen].
 class MyCoursesPage extends StatelessWidget {
   const MyCoursesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Courses')),
+      appBar: AppBar(title: const Text('My Masterclasses')),
       body: const MyCoursesScreen(),
     );
   }
@@ -34,10 +33,6 @@ class MyCoursesPage extends StatelessWidget {
 class _MyCoursesScreenState extends State<MyCoursesScreen> {
   String? _loadedForUserId;
 
-  /// Loads (or reloads) enrollments whenever the signed-in user changes.
-  /// [didChangeDependencies] fires on every Provider update, so guard with
-  /// the user id to avoid reload loops. The load is deferred to after the
-  /// current frame because it triggers provider notifications.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -55,21 +50,25 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
   Widget build(BuildContext context) {
     final enrollmentProvider = context.watch<EnrollmentProvider>();
     final courseProvider = context.watch<CourseProvider>();
-    final theme = Theme.of(context);
+    final lessonProvider = context.watch<LessonProvider>();
 
-    return enrollmentProvider.isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : enrollmentProvider.error != null
+    return enrollmentProvider.isLoading && enrollmentProvider.enrollments.isEmpty
+        ? const Center(
+            child: CircularProgressIndicator(color: AppTheme.goldPrimary),
+          )
+        : enrollmentProvider.error != null &&
+                enrollmentProvider.enrollments.isEmpty
             ? Center(
                 child: Text(
                   enrollmentProvider.error!,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: theme.colorScheme.error),
+                  style: const TextStyle(color: AppTheme.accentRuby),
                 ),
               )
             : enrollmentProvider.enrollments.isEmpty
                 ? const _EmptyState()
                 : RefreshIndicator(
+                    color: AppTheme.goldPrimary,
+                    backgroundColor: AppTheme.bgCard,
                     onRefresh: () async {
                       final user = context.read<AuthProvider>().user;
                       if (user != null) {
@@ -79,7 +78,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                       }
                     },
                     child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                       itemCount: enrollmentProvider.enrollments.length,
                       itemBuilder: (context, index) {
                         final enrollment =
@@ -88,6 +87,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                           key: ValueKey(enrollment.id),
                           enrollment: enrollment,
                           courseProvider: courseProvider,
+                          lessonProvider: lessonProvider,
                         );
                       },
                     ),
@@ -95,86 +95,132 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
   }
 }
 
-/// Enrollment card with thumbnail, title, status pill, and progress (3.2).
 class _EnrollmentCard extends StatelessWidget {
   const _EnrollmentCard({
     super.key,
     required this.enrollment,
     required this.courseProvider,
+    required this.lessonProvider,
   });
 
   final Enrollment enrollment;
   final CourseProvider courseProvider;
+  final LessonProvider lessonProvider;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    // Catalog lookup first, then the detail cache (AGENT.md §4.4 — all data
-    // via providers).
     final course = courseProvider.courseById(enrollment.courseId);
-    final totalLessons = course?.lessonIds.length ?? 0;
-    final fraction = enrollment.progressFraction(totalLessons);
+    final courseLessons = lessonProvider.lessonsFor(enrollment.courseId);
+    final totalLessons = course?.lessonIds.isNotEmpty == true
+        ? course!.lessonIds.length
+        : (courseLessons.isNotEmpty ? courseLessons.length : 1);
+    final completedCount = enrollment.completedLessonIds.length;
+    final fraction = totalLessons > 0 ? (completedCount / totalLessons).clamp(0.0, 1.0) : 0.0;
 
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => Navigator.of(context).pushNamed(
-          '/enrollment-detail',
-          arguments: enrollment.id,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppTheme.borderGold.withValues(alpha: 0.25),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Thumbnail for quick recognition (reuses 2.4 data).
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  width: 72,
-                  height: 72,
-                  child: Image.network(
-                    course?.thumbnailUrl ?? '',
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _thumbPlaceholder(theme),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => Navigator.of(context).pushNamed(
+            '/enrollment-detail',
+            arguments: enrollment.id,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            course?.title ?? enrollment.courseId,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        _StatusPill(status: enrollment.status),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Enrolled ${_formatDate(enrollment.enrolledAt)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.outline,
+                    // Thumbnail
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        width: 76,
+                        height: 76,
+                        color: AppTheme.bgSurface,
+                        child: course?.thumbnailUrl != null &&
+                                course!.thumbnailUrl!.isNotEmpty
+                            ? Image.network(
+                                course.thumbnailUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) =>
+                                    _thumbPlaceholder(),
+                              )
+                            : _thumbPlaceholder(),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    ProgressBar(
-                      fraction: fraction,
-                      label:
-                          '${enrollment.completedLessonIds.length} of $totalLessons lessons completed',
+                    const SizedBox(width: 14),
+
+                    // Details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              _StatusPill(status: enrollment.status),
+                              const Spacer(),
+                              Text(
+                                '${(fraction * 100).toInt()}% Done',
+                                style: const TextStyle(
+                                  color: AppTheme.goldLight,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            course?.title ?? 'Enrolled Course',
+                            style: const TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Enrolled ${_formatDate(enrollment.enrolledAt)}',
+                            style: const TextStyle(
+                              color: AppTheme.textMuted,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+
+                // Progress Bar
+                ProgressBar(
+                  fraction: fraction,
+                  label: '$completedCount of $totalLessons sessions completed',
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -183,13 +229,12 @@ class _EnrollmentCard extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final local = date.toLocal();
-    return '${local.year}-${local.month.toString().padLeft(2, '0')}-'
-        '${local.day.toString().padLeft(2, '0')}';
+    return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
   }
 
-  Widget _thumbPlaceholder(ThemeData theme) => ColoredBox(
-        color: theme.colorScheme.surfaceContainerHighest,
-        child: Icon(Icons.school_outlined, color: theme.colorScheme.outline),
+  Widget _thumbPlaceholder() => const Center(
+        child: Icon(Icons.school_outlined,
+            color: AppTheme.goldPrimary, size: 28),
       );
 }
 
@@ -200,23 +245,21 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final completed = status == EnrollmentStatus.completed;
+    final isDone = status == EnrollmentStatus.completed;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: completed
-            ? theme.colorScheme.primaryContainer
-            : theme.colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(999),
+        color: (isDone ? AppTheme.accentEmerald : AppTheme.goldPrimary)
+            .withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        completed ? 'Completed' : 'In progress',
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: completed
-              ? theme.colorScheme.onPrimaryContainer
-              : theme.colorScheme.onSecondaryContainer,
-          fontWeight: FontWeight.w600,
+        isDone ? 'Completed' : 'In progress',
+        style: TextStyle(
+          color: isDone ? AppTheme.accentEmerald : AppTheme.goldLight,
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.6,
         ),
       ),
     );
@@ -228,41 +271,40 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 88,
-            height: 88,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppTheme.bgCard,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppTheme.borderGold),
+              ),
+              child: const Icon(Icons.bookmark_outline_rounded,
+                  size: 38, color: AppTheme.goldPrimary),
             ),
-            child: Icon(Icons.bookmark_border_outlined,
-                size: 44, color: theme.colorScheme.outline),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'You have not enrolled in any courses yet.',
-            style: theme.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w600,
+            const SizedBox(height: 20),
+            const Text(
+              'No active enrollments',
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Browse the catalog and enroll to start learning.',
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(color: theme.colorScheme.outline),
-          ),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
-            icon: const Icon(Icons.explore_outlined),
-            label: const Text('Browse courses'),
-          ),
-        ],
+            const SizedBox(height: 8),
+            const Text(
+              'Discover executive micro-courses in the catalog and begin your journey.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppTheme.textMuted, fontSize: 14),
+            ),
+          ],
+        ),
       ),
     );
   }
