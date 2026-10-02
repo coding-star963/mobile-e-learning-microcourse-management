@@ -21,6 +21,12 @@ import 'package:mobile_e_learning_micro_course_system/ui/screens/lesson/lesson_d
 import 'package:mobile_e_learning_micro_course_system/ui/screens/lesson/lesson_list_screen.dart';
 import 'package:provider/provider.dart';
 
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
+import 'package:video_player_platform_interface/video_player_platform_interface.dart';
+
+import 'support/fake_platforms.dart';
+import 'support/student_overview_providers.dart';
+
 class _TransparentMockHttpClient extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -59,6 +65,7 @@ void main() {
         ChangeNotifierProvider<EnrollmentProvider>(
           create: (_) => EnrollmentProvider(repo: MockEnrollmentRepository()),
         ),
+        ...studentOverviewProviders(),
         ChangeNotifierProvider<LessonProvider>(
           create: (_) => LessonProvider(repo: lessonRepo),
         ),
@@ -96,8 +103,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('My Courses'));
-    await tester.pumpAndSettle();
+    await openTab(tester, 'My Courses');
 
     await tester.tap(find.text('Intro to Flutter'));
     await tester.pumpAndSettle();
@@ -138,8 +144,9 @@ void main() {
   });
 
   group('4.3 Media Playback', () {
-    testWidgets('cinematic player has play/pause controls and scrubber',
-        (tester) async {
+    testWidgets('plays and pauses the lesson video', (tester) async {
+      final player = FakeVideoPlayer();
+      VideoPlayerPlatform.instance = player;
       setupTallViewport(tester);
       await tester.pumpWidget(appUnderTest(
         home: const LessonDetailScreen(
@@ -151,18 +158,46 @@ void main() {
 
       expect(find.byIcon(Icons.play_arrow_rounded), findsWidgets);
 
-      // Tap play
+      // Play streams the lesson's media URL.
       await tester.tap(find.byIcon(Icons.play_arrow_rounded).first);
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
-      // Verified playing state: pause icon visible
-      expect(find.byIcon(Icons.pause), findsOneWidget);
+      expect(player.calls.first, startsWith('create '));
+      expect(player.calls, contains('play'));
+      expect(find.byTooltip('Pause'), findsOneWidget);
+      expect(find.text('00:00 / 05:00'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Pause'));
+      await tester.pump();
+      expect(player.calls, contains('pause'));
+    });
+
+    testWidgets('shows a friendly message when the media cannot load',
+        (tester) async {
+      VideoPlayerPlatform.instance = FakeVideoPlayer(failToLoad: true);
+      setupTallViewport(tester);
+      await tester.pumpWidget(appUnderTest(
+        home: const LessonDetailScreen(
+          courseId: 'course-001',
+          lessonId: 'lesson-001',
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.play_arrow_rounded).first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.textContaining('Could not play this media'), findsOneWidget);
     });
   });
 
-  group('4.4 Download Learning Resources (Auto-Allowed)', () {
-    testWidgets('downloading resource auto-completes without permission popup',
+  group('4.4 View/Download Learning Resources', () {
+    testWidgets('opens the resource file without a permission popup',
         (tester) async {
+      final launcher = FakeUrlLauncher();
+      UrlLauncherPlatform.instance = launcher;
       setupTallViewport(tester);
       await tester.pumpWidget(appUnderTest(
         home: const LessonDetailScreen(
@@ -175,12 +210,13 @@ void main() {
       expect(find.text('Learning Resources'), findsOneWidget);
       expect(find.text('Flutter-CheatSheet-v3.pdf'), findsOneWidget);
 
-      // Tap download icon button
-      await tester.tap(find.byTooltip('Download resource').first);
+      // Opens the file in the browser/viewer app, where it can be saved.
+      await tester.tap(find.byTooltip('Open or download resource').first);
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
-      // Auto-allowed: marked as downloaded with green checkmark
-      expect(find.byTooltip('Downloaded'), findsOneWidget);
+      expect(launcher.launched, ['https://example.com/flutter-cheatsheet.pdf']);
+      expect(find.text('Opening "Flutter-CheatSheet-v3.pdf"...'), findsOneWidget);
     });
   });
 

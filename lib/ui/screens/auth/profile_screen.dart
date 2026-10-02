@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme.dart';
 import '../../../data/api/api_client.dart';
 import '../../../providers/auth_provider.dart';
+import '../../widgets/server_config_dialog.dart';
 
 /// 1.4 Luxury Profile Management Screen.
 /// Displays student identity, profile photo, credentials management,
@@ -76,6 +78,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// 1.4 Profile Management — choose and upload a new profile photo.
+  Future<void> _pickPhoto() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      imageQuality: 85,
+    );
+    if (picked == null || !mounted) return;
+    final bytes = await picked.readAsBytes();
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    final ok = await auth.uploadProfilePhoto(bytes: bytes, fileName: picked.name);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(ok ? 'Profile photo updated.' : (auth.error ?? 'Could not upload photo.')),
+      ),
+    );
+  }
+
   Future<void> _changePassword() async {
     FocusScope.of(context).unfocus();
     final auth = context.read<AuthProvider>();
@@ -99,68 +121,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _showServerConfigDialog() async {
-    final controller = TextEditingController(text: _currentServerUrl);
-    final newUrl = await showDialog<String>(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: AppTheme.bgCard,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppTheme.borderGold),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.hub_outlined, color: AppTheme.goldPrimary),
-            SizedBox(width: 10),
-            Text('Server Endpoint', style: TextStyle(fontSize: 18)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Specify host machine IP for mobile testing on same Wi-Fi:',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: controller,
-              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-              decoration: const InputDecoration(
-                hintText: 'http://192.168.8.56:8000/api',
-                labelText: 'API Base URL',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.goldPrimary,
-              foregroundColor: Colors.black,
-            ),
-            onPressed: () => Navigator.of(dialogCtx).pop(controller.text.trim()),
-            child: const Text('Save & Apply'),
-          ),
-        ],
-      ),
-    );
-
-    if (newUrl != null && newUrl.isNotEmpty) {
-      await ApiClient.instance.setBaseUrl(newUrl);
-      await _loadServerUrl();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Server endpoint saved: $_currentServerUrl'),
-          ),
-        );
-      }
+    final savedUrl = await showServerConfigDialog(context);
+    if (savedUrl != null && mounted) {
+      setState(() => _currentServerUrl = savedUrl);
     }
   }
 
@@ -197,6 +160,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     padding: const EdgeInsets.all(3),
                     child: CircleAvatar(
                       backgroundColor: AppTheme.bgCard,
+                      foregroundImage: (user?.photoUrl?.startsWith('http') ?? false)
+                          ? NetworkImage(user!.photoUrl!)
+                          : null,
+                      onForegroundImageError: (user?.photoUrl?.startsWith('http') ?? false)
+                          ? (_, _) {}
+                          : null,
                       child: Text(
                         (user?.fullName.isNotEmpty ?? false)
                             ? user!.fullName[0].toUpperCase()
@@ -209,7 +178,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  TextButton.icon(
+                    onPressed: auth.isLoading ? null : _pickPhoto,
+                    icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                    label: const Text('Change photo'),
+                  ),
                   Text(
                     user?.fullName ?? 'Student Member',
                     style: const TextStyle(

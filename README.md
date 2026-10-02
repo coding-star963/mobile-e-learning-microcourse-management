@@ -1,17 +1,16 @@
-# mobile_e_learning_micro_course_system
+# Mobile — Student App (Flutter)
 
-A new Flutter project.
+Student-facing app: course discovery, enrollment, lessons (video/audio, resources), progress, learning history, announcements/notifications and the student dashboard.
 
-## Getting Started
+See the [project README](../README.md) for full setup and demo accounts, and [AGENT.md](AGENT.md) for the module list and architecture rules.
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run                                                   # then long-press the login logo to set the server
+flutter run --dart-define=API_BASE_URL=http://<laptop-ip>:8000/api   # or set it at build time
+flutter analyze
+flutter test
+```
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- `lib/main.dart` wires the REST repositories (`lib/data/api/`). Widget tests use the in-memory mock repositories (`lib/data/mock/`).
+- Only student accounts can sign in. The login session is remembered until logout.

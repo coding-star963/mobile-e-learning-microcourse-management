@@ -11,7 +11,11 @@ import 'package:mobile_e_learning_micro_course_system/data/repositories/enrollme
 import 'package:mobile_e_learning_micro_course_system/providers/auth_provider.dart';
 import 'package:mobile_e_learning_micro_course_system/providers/course_provider.dart';
 import 'package:mobile_e_learning_micro_course_system/providers/enrollment_provider.dart';
+import 'package:mobile_e_learning_micro_course_system/data/mock/mock_lesson_repository.dart';
+import 'package:mobile_e_learning_micro_course_system/providers/lesson_provider.dart';
 import 'package:provider/provider.dart';
+
+import 'support/student_overview_providers.dart';
 
 /// Widget tests for Module 1 — Authentication & Profile Management (1.1–1.4).
 /// Mock-backed and in-memory only (AGENT.md §2, §8).
@@ -33,6 +37,10 @@ void main() {
         ChangeNotifierProvider<EnrollmentProvider>(
           create: (_) => EnrollmentProvider(repo: MockEnrollmentRepository()),
         ),
+        ChangeNotifierProvider<LessonProvider>(
+          create: (_) => LessonProvider(repo: MockLessonRepository()),
+        ),
+        ...studentOverviewProviders(),
       ],
       child: const MicroLearnApp(),
     );
@@ -60,8 +68,13 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
       await tester.pumpAndSettle();
 
-      // Home shell now hosts the course catalog (Module 2).
+      // Home shell opens on the student dashboard (Module 7)...
       expect(find.text('MicroLearn'), findsOneWidget);
+      expect(find.text('Hi, Alex!'), findsOneWidget);
+      expect(find.text('Enrolled'), findsOneWidget);
+
+      // ...and hosts the course catalog (Module 2) in the Courses tab.
+      await openTab(tester, 'Courses');
       expect(find.widgetWithText(TextField, 'Search courses by title or keyword'),
           findsOneWidget);
     });
@@ -135,6 +148,18 @@ void main() {
         find.text('Password reset link sent. Check your email inbox.'),
         findsOneWidget,
       );
+
+      // Step 2: enter the emailed token and a new password.
+      expect(find.text('Check your email'), findsOneWidget);
+      await tester.enterText(find.widgetWithText(TextFormField, 'Reset token'), 'token-from-email');
+      // Reuse the demo password so later tests can still log in (shared mock state).
+      await tester.enterText(find.widgetWithText(TextFormField, 'New password'), AppConstants.demoPassword);
+      await tester.enterText(
+          find.widgetWithText(TextFormField, 'Confirm new password'), AppConstants.demoPassword);
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Reset password'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Reset password'));
+      await tester.pumpAndSettle();
+
       // Returns to the login screen after success.
       expect(find.widgetWithText(FilledButton, 'Log in'), findsOneWidget);
     });

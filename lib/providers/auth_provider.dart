@@ -21,6 +21,25 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isAuthenticated => user != null;
 
+  /// True while a saved session is being checked on app start.
+  bool isRestoring = false;
+
+  /// 1.1 Resume a saved session (called once on app start).
+  Future<void> restoreSession() async {
+    isRestoring = true;
+    notifyListeners();
+    try {
+      user = await _authRepository.restoreSession();
+      status = user == null ? AuthStatus.unauthenticated : AuthStatus.authenticated;
+    } catch (_) {
+      user = null;
+      status = AuthStatus.unauthenticated;
+    } finally {
+      isRestoring = false;
+      notifyListeners();
+    }
+  }
+
   /// 1.1 Login — validates credentials and enters the app on success.
   Future<bool> login(String email, String password) async {
     _setBusy(AuthStatus.authenticating);
@@ -59,6 +78,59 @@ class AuthProvider extends ChangeNotifier {
       await _authRepository.requestPasswordReset(email);
       error = null;
       status = AuthStatus.unauthenticated;
+      notifyListeners();
+      return true;
+    } on AuthException catch (e) {
+      _fail(e.message);
+      return false;
+    } catch (e) {
+      _fail(e.toString());
+      return false;
+    }
+  }
+
+  /// 1.3 Password Recovery — sets a new password with the emailed token.
+  Future<bool> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  }) async {
+    _setBusy(AuthStatus.submitting);
+    try {
+      await _authRepository.resetPassword(
+        email: email,
+        token: token,
+        newPassword: newPassword,
+      );
+      error = null;
+      status = AuthStatus.unauthenticated;
+      notifyListeners();
+      return true;
+    } on AuthException catch (e) {
+      _fail(e.message);
+      return false;
+    } catch (e) {
+      _fail(e.toString());
+      return false;
+    }
+  }
+
+  /// 1.4 Profile Management — uploads a new profile photo.
+  Future<bool> uploadProfilePhoto({
+    required List<int> bytes,
+    required String fileName,
+  }) async {
+    final current = user;
+    if (current == null) return false;
+    _setBusy(AuthStatus.submitting);
+    try {
+      user = await _authRepository.uploadProfilePhoto(
+        userId: current.id,
+        bytes: bytes,
+        fileName: fileName,
+      );
+      error = null;
+      status = AuthStatus.authenticated;
       notifyListeners();
       return true;
     } on AuthException catch (e) {

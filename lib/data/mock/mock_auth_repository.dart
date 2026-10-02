@@ -21,6 +21,10 @@ class MockAuthRepository implements AuthRepository {
     return MockData.userFor(key);
   }
 
+  /// 1.1 No saved sessions in the in-memory mock phase.
+  @override
+  Future<AppUser?> restoreSession() async => null;
+
   /// 1.2 Logout — mock session ends client-side; nothing to invalidate.
   @override
   Future<void> logout() async {
@@ -37,6 +41,31 @@ class MockAuthRepository implements AuthRepository {
     }
     MockData.passwordResetRequests.add(key);
   }
+
+  /// 1.3 Password Recovery — accepts any token for an email that requested a reset.
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  }) async {
+    await Future<void>.delayed(AppConstants.mockLatency);
+    final key = email.toLowerCase().trim();
+    if (!MockData.passwordResetRequests.contains(key) || token.trim().isEmpty) {
+      throw const AuthException('The provided password reset token is invalid.');
+    }
+    MockData.accountJsonByName[key]!['password'] = newPassword;
+    MockData.passwordResetRequests.remove(key);
+  }
+
+  /// 1.4 Profile Management — records the uploaded file name in memory.
+  @override
+  Future<AppUser> uploadProfilePhoto({
+    required String userId,
+    required List<int> bytes,
+    required String fileName,
+  }) =>
+      updateProfile(userId: userId, photoUrl: 'mock-upload://$fileName');
 
   /// 1.4 Profile Management — returns the student's profile (seed + overrides).
   @override

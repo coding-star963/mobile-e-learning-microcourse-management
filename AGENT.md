@@ -26,8 +26,8 @@ A **Flutter mobile application for students/users** of an E-Learning & Micro-Cou
 |---|---|
 | Framework | Flutter (Material 3), Dart SDK `^3.12.2` |
 | State management | **Provider** (`package:provider`, `ChangeNotifier`) |
-| Data (current phase) | **In-memory mock data only** — seeded in code, resets on app restart. No local persistence, no database. |
-| Data (future phase) | REST API — must be a drop-in replacement (see §5) |
+| Data (current phase) | **REST API is live** — `lib/data/api/` repositories are wired in `main.dart` and talk to the Laravel backend. `shared_preferences` stores only the token, saved user, server URL and notification "seen" time. |
+| Mock data | `lib/data/mock/` stays in-memory and is used by widget tests; keep it in sync with each repository contract. |
 | Lints | `package:flutter_lints` via `analysis_options.yaml` — code must pass `flutter analyze` with zero issues |
 | Tests | `flutter_test` — widget tests must not depend on network or persistence |
 
@@ -285,7 +285,7 @@ class MockData {
 - Provide enough seed data to exercise every module: several categories, published **and** unpublished courses, courses with multiple ordered lessons (some locked/unavailable for 4.6), resources of each type (video/audio/pdf/image), enrollments with varied progress (0%, partial, 100%), announcements, and notifications (read/unread).
 - Include **one demo student account** for login (e.g. `student@demo.com` / `password123`) — login must validate against mock credentials, and wrong credentials must fail with a friendly error.
 - Mock repositories may simulate latency with a small `Future.delayed` so loading states are realistic and get built.
-- **In-memory means in-memory:** mutations happen only in the running app's data structures and reset on restart. Do NOT add `shared_preferences`, files, or databases unless the user explicitly asks.
+- **In-memory means in-memory:** mock mutations happen only in the running app's data structures and reset on restart. (The REST repositories persist only the session token, server URL and notification "seen" time with `shared_preferences`.)
 - Mutating mock data must go through repository methods, which update the in-memory lists in `MockData` (or the repository's own state) so all providers stay consistent.
 
 ---

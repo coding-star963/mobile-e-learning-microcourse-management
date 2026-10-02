@@ -1,12 +1,13 @@
 import '../../models/user.dart';
-import '../mock/mock_auth_repository.dart';
 import '../repositories/auth_repository.dart';
 import 'api_client.dart';
 
+/// Module 1 against the Laravel REST API. Errors are surfaced as
+/// [AuthException]s; there is no fallback to mock data.
 class RestAuthRepository implements AuthRepository {
   final ApiClient _api = ApiClient.instance;
-  final MockAuthRepository _mockFallback = MockAuthRepository();
 
+  /// 1.1 Login — only student accounts may use the mobile app.
   @override
   Future<AppUser> login({required String email, required String password}) async {
     final res = await _api.post('/login', body: {
@@ -14,66 +15,108 @@ class RestAuthRepository implements AuthRepository {
       'password': password,
     });
 
-    if (res.isSuccess && res.data is Map) {
-      final data = res.data as Map<String, dynamic>;
-      final token = data['token']?.toString() ?? '';
-      if (token.isNotEmpty) {
-        await _api.saveToken(token);
-      }
-      final userData = data['user'];
-      if (userData is Map) {
-        final map = Map<String, dynamic>.from(userData);
-        await _api.saveUserJson(map);
-        return AppUser.fromJson(map);
-      }
+    if (!res.isSuccess) {
+      throw AuthException(_api.errorMessage(res, 'Invalid credentials or login failed.'));
     }
 
-    // If server unreachable or error:
-    if (res.statusCode == 0) {
-      // Backend not running on this host yet; use fallback so developer can still test
-      try {
-        return await _mockFallback.login(email: email, password: password);
-      } catch (_) {
-        throw const AuthException(
-          'Unable to reach backend server. Please verify server IP in settings.',
-        );
-      }
+    final data = res.data is Map ? res.data as Map : const {};
+    final token = data['token']?.toString() ?? '';
+    final userData = data['user'];
+    if (token.isEmpty || userData is! Map) {
+      throw const AuthException('Unexpected response from the server.');
     }
 
-    throw AuthException(res.message ?? 'Invalid credentials or login failed.');
+    final userMap = Map<String, dynamic>.from(userData);
+    if (userMap['role'] != 'student') {
+      // Revoke the token that was just issued; staff use the web app.
+      await _api.saveToken(token);
+      await _api.post('/logout');
+      await _api.clearToken();
+      throw const AuthException(
+        'This app is for students. Administrators and teachers please use the web portal.',
+      );
+    }
+
+    await _api.saveToken(token);
+    await _api.saveUserJson(userMap);
+    return AppUser.fromJson(userMap);
   }
 
+  /// 1.1 Resume the saved session if its token is still valid.
+  @override
+  Future<AppUser?> restoreSession() async {
+    final token = await _api.getToken();
+    if (token == null || token.isEmpty) return null;
+
+    final res = await _api.get('/user');
+    final userMap = res.isSuccess ? ApiClient.dataItem(res.data) : null;
+    if (userMap != null && userMap['role'] == 'student') {
+      await _api.saveUserJson(userMap);
+      return AppUser.fromJson(userMap);
+    }
+    if (res.statusCode == 401 || res.statusCode == 403 || userMap != null) {
+      await _api.clearToken(); // expired, revoked, or not a student
+    }
+    return null;
+  }
+
+  /// 1.2 Logout
   @override
   Future<void> logout() async {
-    try {
-      await _api.post('/logout');
-    } catch (_) {}
+    await _api.post('/logout');
     await _api.clearToken();
-    await _mockFallback.logout();
   }
 
+  /// 1.3 Password Recovery — the reset instructions are emailed by the server.
   @override
   Future<void> requestPasswordReset(String email) async {
     final res = await _api.post('/forgot-password', body: {'email': email.trim()});
-    if (!res.isSuccess && res.statusCode != 0) {
-      throw AuthException(res.message ?? 'Failed to request password reset.');
+    if (!res.isSuccess) {
+      throw AuthException(_api.errorMessage(res, 'Failed to request password reset.'));
     }
-    if (res.statusCode == 0) {
-      await _mockFallback.requestPasswordReset(email);
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  }) async {
+    final res = await _api.post('/reset-password', body: {
+      'email': email.trim(),
+      'token': token.trim(),
+      'password': newPassword,
+      'password_confirmation': newPassword,
+    });
+    if (!res.isSuccess) {
+      throw AuthException(_api.errorMessage(res, 'Could not reset your password.'));
     }
+  }
+
+  /// 1.4 Profile Management
+  @override
+  Future<AppUser> uploadProfilePhoto({
+    required String userId,
+    required List<int> bytes,
+    required String fileName,
+  }) async {
+    final res = await _api.postFile('/profile/photo', field: 'photo', bytes: bytes, fileName: fileName);
+    final userMap = res.isSuccess ? ApiClient.dataItem(res.data, 'user') : null;
+    if (userMap == null) {
+      throw AuthException(_api.errorMessage(res, 'Could not upload your photo.'));
+    }
+    await _api.saveUserJson(userMap);
+    return AppUser.fromJson(userMap);
   }
 
   @override
   Future<AppUser> getProfile(String userId) async {
     final res = await _api.get('/user');
-    if (res.isSuccess && res.data is Map) {
-      final data = res.data as Map<String, dynamic>;
-      final userMap = data.containsKey('data') ? data['data'] : data;
-      if (userMap is Map) {
-        return AppUser.fromJson(Map<String, dynamic>.from(userMap));
-      }
+    final userMap = res.isSuccess ? ApiClient.dataItem(res.data) : null;
+    if (userMap == null) {
+      throw AuthException(_api.errorMessage(res, 'Could not load your profile.'));
     }
-    return _mockFallback.getProfile(userId);
+    return AppUser.fromJson(userMap);
   }
 
   @override
@@ -88,19 +131,12 @@ class RestAuthRepository implements AuthRepository {
     if (email != null) body['email'] = email;
 
     final res = await _api.put('/profile', body: body);
-    if (res.isSuccess && res.data is Map) {
-      final data = res.data as Map<String, dynamic>;
-      final userMap = data['user'] ?? data['data'] ?? data;
-      if (userMap is Map) {
-        return AppUser.fromJson(Map<String, dynamic>.from(userMap));
-      }
+    final userMap = res.isSuccess ? ApiClient.dataItem(res.data, 'user') : null;
+    if (userMap == null) {
+      throw AuthException(_api.errorMessage(res, 'Could not update your profile.'));
     }
-    return _mockFallback.updateProfile(
-      userId: userId,
-      fullName: fullName,
-      email: email,
-      photoUrl: photoUrl,
-    );
+    await _api.saveUserJson(userMap);
+    return AppUser.fromJson(userMap);
   }
 
   @override
@@ -111,19 +147,12 @@ class RestAuthRepository implements AuthRepository {
   }) async {
     final res = await _api.put('/profile/password', body: {
       'current_password': currentPassword,
-      'new_password': newPassword,
-      'new_password_confirmation': newPassword,
+      'password': newPassword,
+      'password_confirmation': newPassword,
     });
 
-    if (!res.isSuccess && res.statusCode != 0) {
-      throw AuthException(res.message ?? 'Password change failed.');
-    }
-    if (res.statusCode == 0) {
-      await _mockFallback.changePassword(
-        userId: userId,
-        currentPassword: currentPassword,
-        newPassword: newPassword,
-      );
+    if (!res.isSuccess) {
+      throw AuthException(_api.errorMessage(res, 'Password change failed.'));
     }
   }
 }

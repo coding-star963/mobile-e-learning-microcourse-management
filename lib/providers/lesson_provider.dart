@@ -11,7 +11,8 @@ class LessonProvider extends ChangeNotifier {
 
   final Map<String, List<Lesson>> _courseLessons = {};
   final Map<String, Lesson> _lessonDetails = {};
-  final Set<String> _completedLessonIds = {'lesson-001', 'lesson-007'};
+  /// Completed lessons for the signed-in student, seeded from the server.
+  final Set<String> _completedLessonIds = {};
 
   bool _isLoading = false;
   String? _error;
@@ -38,6 +39,7 @@ class LessonProvider extends ChangeNotifier {
       _courseLessons[courseId] = lessons;
       for (final l in lessons) {
         _lessonDetails[l.id] = l;
+        _rememberCompletion(l);
       }
     } catch (e) {
       _error = 'Failed to load lessons: $e';
@@ -58,6 +60,7 @@ class LessonProvider extends ChangeNotifier {
       final lesson = await repo.getLessonDetails(courseId, lessonId);
       if (lesson != null) {
         _lessonDetails[lessonId] = lesson;
+        _rememberCompletion(lesson);
         notifyListeners();
       }
       return lesson;
@@ -68,21 +71,33 @@ class LessonProvider extends ChangeNotifier {
     }
   }
 
-  /// 5.1 Track Lesson Completion
+  /// 5.1 Track Lesson Completion — updates the UI immediately, saves to the
+  /// repository, and reverts (returning false, with [error] set) if saving fails.
   Future<bool> toggleLessonCompleted(String lessonId) async {
-    final currentlyDone = _completedLessonIds.contains(lessonId);
-    if (currentlyDone) {
-      _completedLessonIds.remove(lessonId);
-    } else {
-      _completedLessonIds.add(lessonId);
-    }
+    final completed = !_completedLessonIds.contains(lessonId);
+    _setCompleted(lessonId, completed);
+    _error = null;
     notifyListeners();
 
     try {
-      await repo.markLessonCompleted(lessonId);
+      await repo.markLessonCompleted(lessonId, completed: completed);
       return true;
-    } catch (_) {
-      return true; // Optimistic update
+    } catch (e) {
+      _setCompleted(lessonId, !completed);
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  void _rememberCompletion(Lesson lesson) =>
+      _setCompleted(lesson.id, lesson.isCompleted);
+
+  void _setCompleted(String lessonId, bool completed) {
+    if (completed) {
+      _completedLessonIds.add(lessonId);
+    } else {
+      _completedLessonIds.remove(lessonId);
     }
   }
 }

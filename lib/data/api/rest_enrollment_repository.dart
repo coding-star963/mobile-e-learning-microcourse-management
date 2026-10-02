@@ -1,106 +1,60 @@
 import '../../models/enrollment.dart';
-import '../mock/mock_enrollment_repository.dart';
 import '../repositories/enrollment_repository.dart';
 import 'api_client.dart';
 
+/// Module 3 against the Laravel REST API. Errors are surfaced as
+/// [EnrollmentException]s; there is no fallback to mock data.
 class RestEnrollmentRepository implements EnrollmentRepository {
   final ApiClient _api = ApiClient.instance;
-  final MockEnrollmentRepository _mock = MockEnrollmentRepository();
 
+  /// 3.1 Enroll in Course — the server always enrolls the signed-in student.
   @override
   Future<Enrollment> enroll({
     required String studentId,
     required String courseId,
   }) async {
-    final res = await _api.post('/enrollments', body: {
-      'user_id': studentId,
-      'course_id': courseId,
-    });
-
-    if (res.isSuccess && res.data != null) {
-      final item = res.data is Map && res.data.containsKey('data')
-          ? res.data['data']
-          : (res.data is Map && res.data.containsKey('enrollment')
-              ? res.data['enrollment']
-              : res.data);
-      if (item is Map) {
-        return Enrollment.fromJson(Map<String, dynamic>.from(item));
-      }
+    final res = await _api.post('/enrollments', body: {'course_id': courseId});
+    final item = res.isSuccess ? ApiClient.dataItem(res.data, 'enrollment') : null;
+    if (item == null) {
+      throw EnrollmentException(_api.errorMessage(res, 'Enrollment failed.'));
     }
-
-    if (res.statusCode == 422) {
-      throw EnrollmentException(
-        res.message ?? 'This student is already enrolled in this course.',
-      );
-    }
-
-    if (res.statusCode == 0) {
-      return _mock.enroll(studentId: studentId, courseId: courseId);
-    }
-
-    throw EnrollmentException(res.message ?? 'Enrollment failed.');
+    return Enrollment.fromJson(item);
   }
 
+  /// 3.2 View Enrolled Courses
   @override
   Future<List<Enrollment>> getMyEnrollments(String studentId) async {
-    final res = await _api.get('/enrollments/student/$studentId');
-    if (res.isSuccess && res.data != null) {
-      final list = res.data is Map && res.data.containsKey('data')
-          ? res.data['data']
-          : res.data;
-      if (list is List) {
-        return list
-            .whereType<Map>()
-            .map((e) => Enrollment.fromJson(Map<String, dynamic>.from(e)))
-            .toList();
-      }
+    final res = await _api.get('/enrollments/student/$studentId', query: {'per_page': 100});
+    if (!res.isSuccess) {
+      throw EnrollmentException(_api.errorMessage(res, 'Could not load your courses.'));
     }
-    return _mock.getMyEnrollments(studentId);
+    return ApiClient.dataList(res.data).map(Enrollment.fromJson).toList();
   }
 
+  /// 3.3 View Enrollment Details
   @override
   Future<Enrollment> getEnrollmentDetails({
     required String studentId,
     required String enrollmentId,
   }) async {
     final res = await _api.get('/enrollments/$enrollmentId');
-    if (res.isSuccess && res.data != null) {
-      final item = res.data is Map && res.data.containsKey('data')
-          ? res.data['data']
-          : res.data;
-      if (item is Map) {
-        return Enrollment.fromJson(Map<String, dynamic>.from(item));
-      }
+    final item = res.isSuccess ? ApiClient.dataItem(res.data) : null;
+    if (item == null) {
+      throw EnrollmentException(_api.errorMessage(res, 'Enrollment not found.'));
     }
-    return _mock.getEnrollmentDetails(
-      studentId: studentId,
-      enrollmentId: enrollmentId,
-    );
+    return Enrollment.fromJson(item);
   }
 
+  /// 3.4 Access Enrolled Course
   @override
   Future<Enrollment?> getEnrollmentForCourse({
     required String studentId,
     required String courseId,
   }) async {
-    final res = await _api.get('/enrollments/student/$studentId');
-    if (res.isSuccess && res.data != null) {
-      final list = res.data is Map && res.data.containsKey('data')
-          ? res.data['data']
-          : res.data;
-      if (list is List) {
-        for (final item in list.whereType<Map>()) {
-          final enr = Enrollment.fromJson(Map<String, dynamic>.from(item));
-          if (enr.courseId == courseId) {
-            return enr;
-          }
-        }
-        return null;
-      }
+    final enrollments = await getMyEnrollments(studentId);
+    for (final enrollment in enrollments) {
+      if (enrollment.courseId == courseId) return enrollment;
     }
-    return _mock.getEnrollmentForCourse(
-      studentId: studentId,
-      courseId: courseId,
-    );
+    return null;
   }
 }

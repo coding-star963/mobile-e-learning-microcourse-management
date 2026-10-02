@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme.dart';
 import '../../../providers/auth_provider.dart';
+import 'reset_password_screen.dart';
 
 /// 1.3 Luxury Password Recovery Screen.
 class ForgotPasswordScreen extends StatefulWidget {
@@ -26,14 +27,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
     final auth = context.read<AuthProvider>();
-    final ok = await auth.requestPasswordReset(_emailController.text.trim());
+    final email = _emailController.text.trim();
+    final ok = await auth.requestPasswordReset(email);
     if (!mounted || !ok) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Password reset link sent. Check your email inbox.'),
       ),
     );
-    if (mounted) Navigator.of(context).pop();
+    // Step 2: enter the emailed token and a new password.
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => ResetPasswordScreen(email: email)),
+    );
   }
 
   @override

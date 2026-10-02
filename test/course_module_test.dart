@@ -14,7 +14,11 @@ import 'package:mobile_e_learning_micro_course_system/data/repositories/enrollme
 import 'package:mobile_e_learning_micro_course_system/providers/auth_provider.dart';
 import 'package:mobile_e_learning_micro_course_system/providers/course_provider.dart';
 import 'package:mobile_e_learning_micro_course_system/providers/enrollment_provider.dart';
+import 'package:mobile_e_learning_micro_course_system/data/mock/mock_lesson_repository.dart';
+import 'package:mobile_e_learning_micro_course_system/providers/lesson_provider.dart';
 import 'package:provider/provider.dart';
+
+import 'support/student_overview_providers.dart';
 
 /// Stabilizes mock thumbnails in widget tests: network images would otherwise
 /// throw under the test binding (AGENT.md §8 — tests must not hit network).
@@ -49,6 +53,10 @@ void main() {
         ChangeNotifierProvider<EnrollmentProvider>(
           create: (_) => EnrollmentProvider(repo: MockEnrollmentRepository()),
         ),
+        ChangeNotifierProvider<LessonProvider>(
+          create: (_) => LessonProvider(repo: MockLessonRepository()),
+        ),
+        ...studentOverviewProviders(),
       ],
       child: const MicroLearnApp(),
     );
@@ -69,6 +77,7 @@ void main() {
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
     await tester.pumpAndSettle();
+    await openTab(tester, 'Courses');
   }
 
   group('2.1 View Available Courses', () {

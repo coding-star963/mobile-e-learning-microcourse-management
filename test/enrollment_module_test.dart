@@ -14,7 +14,11 @@ import 'package:mobile_e_learning_micro_course_system/data/repositories/enrollme
 import 'package:mobile_e_learning_micro_course_system/providers/auth_provider.dart';
 import 'package:mobile_e_learning_micro_course_system/providers/course_provider.dart';
 import 'package:mobile_e_learning_micro_course_system/providers/enrollment_provider.dart';
+import 'package:mobile_e_learning_micro_course_system/data/mock/mock_lesson_repository.dart';
+import 'package:mobile_e_learning_micro_course_system/providers/lesson_provider.dart';
 import 'package:provider/provider.dart';
+
+import 'support/student_overview_providers.dart';
 
 /// Widget tests for Module 3 — Course Enrollment (3.1–3.4).
 /// Mock-backed and in-memory only (AGENT.md §2, §8).
@@ -53,6 +57,10 @@ void main() {
         ChangeNotifierProvider<EnrollmentProvider>(
           create: (_) => EnrollmentProvider(repo: MockEnrollmentRepository()),
         ),
+        ChangeNotifierProvider<LessonProvider>(
+          create: (_) => LessonProvider(repo: MockLessonRepository()),
+        ),
+        ...studentOverviewProviders(),
       ],
       child: const MicroLearnApp(),
     );
@@ -80,6 +88,7 @@ void main() {
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
     await tester.pumpAndSettle();
+    await openTab(tester, 'Courses');
   }
 
   /// Opens the catalog card for [title] and waits for details to load.
@@ -93,8 +102,7 @@ void main() {
 
   /// Switches to the My Courses tab.
   Future<void> openMyCoursesTab(WidgetTester tester) async {
-    await tester.tap(find.text('My Courses'));
-    await tester.pumpAndSettle();
+    await openTab(tester, 'My Courses');
   }
 
   group('3.1 Enroll in Course', () {

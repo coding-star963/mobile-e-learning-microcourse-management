@@ -8,7 +8,8 @@ class CourseCategory {
 
   factory CourseCategory.fromJson(Map<String, dynamic> json) =>
       CourseCategory(
-        id: json['id'] as String,
+        // The API sends numeric ids; mock data uses strings.
+        id: json['id'].toString(),
         name: json['name'] as String,
       );
 

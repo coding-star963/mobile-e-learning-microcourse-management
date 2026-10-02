@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants.dart';
 import '../../../core/theme.dart';
 import '../../../providers/auth_provider.dart';
+import '../../widgets/server_config_dialog.dart';
 
 /// 1.1 Luxury Login Screen.
 /// Provides secure credential authentication without any demo account hints.
@@ -31,10 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
     final auth = context.read<AuthProvider>();
-    await auth.login(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
+    await auth.login(_emailController.text.trim(), _passwordController.text);
   }
 
   @override
@@ -59,34 +57,39 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Brand Emblem
+                    // Brand Emblem (long-press to change the server address)
                     Center(
-                      child: Container(
-                        width: 88,
-                        height: 88,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: AppTheme.goldGradient,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.goldPrimary.withValues(alpha: 0.35),
-                              blurRadius: 30,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
+                      child: GestureDetector(
+                        onLongPress: () => showServerConfigDialog(context),
                         child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: const BoxDecoration(
+                          width: 88,
+                          height: 88,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppTheme.bgDark,
+                            gradient: AppTheme.goldGradient,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.goldPrimary.withValues(
+                                  alpha: 0.35,
+                                ),
+                                blurRadius: 30,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
                           ),
-                          child: const Icon(
-                            Icons.auto_stories,
-                            size: 38,
-                            color: AppTheme.goldPrimary,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppTheme.bgDark,
+                            ),
+                            child: const Icon(
+                              Icons.auto_stories,
+                              size: 38,
+                              color: AppTheme.goldPrimary,
+                            ),
                           ),
                         ),
                       ),
@@ -124,13 +127,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: AppTheme.textPrimary),
                       decoration: const InputDecoration(
                         labelText: 'Email',
-                        prefixIcon: Icon(Icons.mail_outline_rounded,
-                            color: AppTheme.goldPrimary),
+                        prefixIcon: Icon(
+                          Icons.mail_outline_rounded,
+                          color: AppTheme.goldPrimary,
+                        ),
                       ),
                       validator: (value) {
                         final v = value?.trim() ?? '';
                         if (v.isEmpty) return 'Enter your email.';
-                        if (!v.contains('@')) return 'Enter a valid email address.';
+                        if (!v.contains('@')) {
+                          return 'Enter a valid email address.';
+                        }
                         return null;
                       },
                     ),
@@ -145,8 +152,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: AppTheme.textPrimary),
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline_rounded,
-                            color: AppTheme.goldPrimary),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline_rounded,
+                          color: AppTheme.goldPrimary,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -155,7 +164,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: AppTheme.textMuted,
                           ),
                           onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword),
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                       ),
                       validator: (value) => (value == null || value.isEmpty)
@@ -172,15 +182,23 @@ class _LoginScreenState extends State<LoginScreen> {
                               margin: const EdgeInsets.only(top: 16),
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppTheme.accentRuby.withValues(alpha: 0.15),
+                                color: AppTheme.accentRuby.withValues(
+                                  alpha: 0.15,
+                                ),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
-                                    color: AppTheme.accentRuby.withValues(alpha: 0.4)),
+                                  color: AppTheme.accentRuby.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                ),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.error_outline,
-                                      size: 18, color: AppTheme.accentRuby),
+                                  const Icon(
+                                    Icons.error_outline,
+                                    size: 18,
+                                    color: AppTheme.accentRuby,
+                                  ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
@@ -234,8 +252,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton(
                       onPressed: auth.isLoading
                           ? null
-                          : () => Navigator.of(context)
-                              .pushNamed('/forgot-password'),
+                          : () => Navigator.of(
+                              context,
+                            ).pushNamed('/forgot-password'),
                       child: const Text(
                         'Forgot password?',
                         style: TextStyle(

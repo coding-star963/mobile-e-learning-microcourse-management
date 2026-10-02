@@ -9,6 +9,7 @@ abstract class LessonRepository {
   /// 4.2 View Lesson Details — detailed lesson information
   Future<Lesson?> getLessonDetails(String courseId, String lessonId);
 
-  /// 5.1 Track Lesson Completion — marks a lesson as completed
-  Future<bool> markLessonCompleted(String lessonId);
+  /// 5.1 Track Lesson Completion — marks a lesson as completed, or as not
+  /// completed when [completed] is false.
+  Future<bool> markLessonCompleted(String lessonId, {bool completed = true});
 }

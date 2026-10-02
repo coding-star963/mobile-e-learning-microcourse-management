@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme.dart';
 import '../../../models/learning_resource.dart';
 import '../../../models/lesson.dart';
 import '../../../providers/lesson_provider.dart';
+import '../../widgets/lesson_media_player.dart';
 
 /// Module 4: Lesson Detail & Multimedia Player Screen (4.2, 4.3, 4.4, 5.1).
 /// Features a luxury cinematic player, instant resource access, and lesson completion.
@@ -23,9 +25,6 @@ class LessonDetailScreen extends StatefulWidget {
 }
 
 class _LessonDetailScreenState extends State<LessonDetailScreen> {
-  bool _isPlaying = false;
-  double _playbackPosition = 0.35; // Mock progress within the media
-  final Set<String> _downloadedResources = {};
 
   @override
   void initState() {
@@ -37,34 +36,35 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     });
   }
 
-  void _togglePlay() {
-    setState(() {
-      _isPlaying = !_isPlaying;
-    });
+  /// 5.1 Track Lesson Completion — tells the student if saving failed.
+  Future<void> _toggleCompleted() async {
+    final lessonProvider = context.read<LessonProvider>();
+    final saved = await lessonProvider.toggleLessonCompleted(widget.lessonId);
+    if (!saved && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(lessonProvider.error ?? 'Could not save your progress.')),
+      );
+    }
   }
 
-  void _handleDownload(LearningResource resource) {
-    // "THEN NO MORE ASKING PERMISSIONS JUST AUTO ALLOW IT"
-    // Auto-proceed with instant download without any annoying permission prompts!
-    setState(() {
-      _downloadedResources.add(resource.id);
-    });
-
+  /// 4.4 View/Download Learning Resources — opens the file in the browser or a
+  /// viewer app, where the student can read or save it.
+  Future<void> _openResource(LearningResource resource) async {
+    final url = resource.fileUrl;
+    var opened = false;
+    if (url != null && url.isNotEmpty) {
+      try {
+        opened = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } catch (_) {
+        opened = false;
+      }
+    }
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: AppTheme.bgCard,
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: AppTheme.accentEmerald, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Downloaded "${resource.name}" successfully.',
-                style: const TextStyle(color: AppTheme.textPrimary),
-              ),
-            ),
-          ],
-        ),
+        content: Text(opened
+            ? 'Opening "${resource.name}"...'
+            : 'Could not open "${resource.name}".'),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -104,11 +104,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               color: isDone ? AppTheme.accentEmerald : AppTheme.textMuted,
             ),
             tooltip: isDone ? 'Mark as incomplete' : 'Mark as complete',
-            onPressed: () {
-              context
-                  .read<LessonProvider>()
-                  .toggleLessonCompleted(widget.lessonId);
-            },
+            onPressed: _toggleCompleted,
           ),
         ],
       ),
@@ -243,7 +239,6 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     )
                   else
                     ...lesson.resources.map((res) {
-                      final downloaded = _downloadedResources.contains(res.id);
                       return Container(
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.symmetric(
@@ -251,10 +246,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         decoration: BoxDecoration(
                           color: AppTheme.bgCard,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                              color: downloaded
-                                  ? AppTheme.accentEmerald.withValues(alpha: 0.5)
-                                  : AppTheme.borderLight),
+                          border: Border.all(color: AppTheme.borderLight),
                         ),
                         child: Row(
                           children: [
@@ -266,9 +258,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
-                                res.fileType.toLowerCase() == 'pdf'
-                                    ? Icons.picture_as_pdf
-                                    : Icons.insert_drive_file_outlined,
+                                _resourceIcon(res.fileType),
                                 color: AppTheme.goldPrimary,
                                 size: 22,
                               ),
@@ -298,16 +288,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                               ),
                             ),
                             IconButton(
-                              icon: Icon(
-                                downloaded
-                                    ? Icons.check_circle
-                                    : Icons.download_rounded,
-                                color: downloaded
-                                    ? AppTheme.accentEmerald
-                                    : AppTheme.goldPrimary,
-                              ),
-                              tooltip: downloaded ? 'Downloaded' : 'Download resource',
-                              onPressed: () => _handleDownload(res),
+                              icon: const Icon(Icons.download_rounded,
+                                  color: AppTheme.goldPrimary),
+                              tooltip: 'Open or download resource',
+                              onPressed: () => _openResource(res),
                             ),
                           ],
                         ),
@@ -327,11 +311,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                           ),
                           label: Text(
                               isDone ? 'Mark Undone' : 'Mark Completed'),
-                          onPressed: () {
-                            context
-                                .read<LessonProvider>()
-                                .toggleLessonCompleted(widget.lessonId);
-                          },
+                          onPressed: _toggleCompleted,
                         ),
                       ),
                       if (nextLesson != null) ...[
@@ -395,9 +375,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Complete previous lessons to unlock this session.',
-                style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+              Text(
+                lesson?.lockedReason ?? 'This lesson is not available yet.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
               ),
             ],
           ),
@@ -405,138 +386,35 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       );
     }
 
-    final hasAudioOnly = (lesson?.hasAudio ?? false) && !(lesson?.hasVideo ?? false);
-
-    return Container(
-      height: 230,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF162136), Color(0xFF090D16)],
-        ),
-      ),
-      child: Stack(
+    if (lesson == null || !lesson.hasMedia) {
+      return Container(
+        height: 120,
+        color: AppTheme.bgCard,
         alignment: Alignment.center,
-        children: [
-          // Background visual
-          if (hasAudioOnly)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(
-                24,
-                (i) => Container(
-                  width: 4,
-                  height: 20 + ((i * 7) % 60).toDouble(),
-                  decoration: BoxDecoration(
-                    color: AppTheme.goldPrimary.withValues(
-                        alpha: _isPlaying ? 0.7 : 0.25),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-            )
-          else
-            Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: AppTheme.borderGold.withValues(alpha: 0.3),
-                  ),
-                ),
-              ),
-            ),
+        child: const Text(
+          'This lesson has no video or audio. See the notes and resources below.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+        ),
+      );
+    }
 
-          // Center Play/Pause button
-          GestureDetector(
-            onTap: _togglePlay,
-            child: Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                gradient: AppTheme.goldGradient,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.goldPrimary.withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Icon(
-                _isPlaying ? Icons.pause : Icons.play_arrow_rounded,
-                color: Colors.black,
-                size: 36,
-              ),
-            ),
-          ),
-
-          // Bottom Control Overlay Bar
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 12,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SliderTheme(
-                  data: SliderThemeData(
-                    trackHeight: 3,
-                    thumbShape:
-                        const RoundSliderThumbShape(enabledThumbRadius: 6),
-                    overlayShape:
-                        const RoundSliderOverlayShape(overlayRadius: 14),
-                    activeTrackColor: AppTheme.goldPrimary,
-                    inactiveTrackColor: Colors.white24,
-                    thumbColor: AppTheme.goldLight,
-                  ),
-                  child: Slider(
-                    value: _playbackPosition,
-                    onChanged: (v) => setState(() => _playbackPosition = v),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Row(
-                    children: [
-                      Text(
-                        _formatTime(_playbackPosition *
-                            (lesson?.durationSeconds ?? 480)),
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 11),
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Icon(
-                            hasAudioOnly ? Icons.audiotrack : Icons.hd_outlined,
-                            color: AppTheme.goldPrimary,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            lesson?.displayDuration ?? '8 min',
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    // 4.3 Play Video/Audio
+    final url = lesson.hasVideo ? lesson.videoUrl! : lesson.audioUrl!;
+    return LessonMediaPlayer(
+      key: ValueKey(url),
+      url: url,
+      isAudio: !lesson.hasVideo,
+      durationLabel: lesson.displayDuration,
     );
   }
 
-  String _formatTime(double totalSeconds) {
-    final s = totalSeconds.toInt();
-    final mins = s ~/ 60;
-    final secs = s % 60;
-    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  static IconData _resourceIcon(String fileType) {
+    final type = fileType.toLowerCase();
+    if (type.contains('pdf')) return Icons.picture_as_pdf;
+    if (type.contains('image')) return Icons.image_outlined;
+    if (type.contains('video')) return Icons.movie_outlined;
+    if (type.contains('audio')) return Icons.audiotrack;
+    return Icons.insert_drive_file_outlined;
   }
 }

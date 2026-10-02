@@ -11,6 +11,7 @@ class Lesson {
     required this.description,
     this.status = 'published',
     this.availability = 'free',
+    this.availableAt,
     this.order = 1,
     this.videoUrl,
     this.audioUrl,
@@ -22,6 +23,7 @@ class Lesson {
     this.durationFormatted,
     this.isFreePreview = false,
     this.resources = const [],
+    this.isCompleted = false,
   });
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,8 @@ class Lesson {
       description: (json['description'] ?? '') as String,
       status: (json['status'] ?? 'published') as String,
       availability: (json['availability'] ?? 'free') as String,
+      availableAt: DateTime.tryParse(
+          (json['availableAt'] ?? json['available_at'])?.toString() ?? '')?.toLocal(),
       order: (json['order'] ?? 1) as int,
       videoUrl: (json['videoUrl'] ?? json['video_url']) as String?,
       audioUrl: (json['audioUrl'] ?? json['audio_url']) as String?,
@@ -50,6 +54,7 @@ class Lesson {
       durationSeconds: (json['durationSeconds'] ?? json['duration_seconds'] ?? 0) as int,
       durationFormatted: (json['durationFormatted'] ?? json['duration_formatted']) as String?,
       isFreePreview: (json['isFreePreview'] ?? json['is_free_preview'] ?? false) as bool,
+      isCompleted: (json['isCompleted'] ?? json['is_completed'] ?? false) as bool,
       resources: parsedResources,
     );
   }
@@ -60,6 +65,9 @@ class Lesson {
   final String description;
   final String status;
   final String availability; // 'free', 'locked', 'scheduled'
+
+  /// When a 'scheduled' lesson opens to students (4.6).
+  final DateTime? availableAt;
   final int order;
   final String? videoUrl;
   final String? audioUrl;
@@ -72,7 +80,30 @@ class Lesson {
   final bool isFreePreview;
   final List<LearningResource> resources;
 
-  bool get isLocked => availability.toLowerCase() == 'locked';
+  /// 5.1 Whether the signed-in student has completed this lesson (from the server).
+  final bool isCompleted;
+
+  /// 4.6 View Lesson Availability — locked by the teacher, or scheduled for later.
+  bool get isLocked {
+    switch (availability.toLowerCase()) {
+      case 'locked':
+        return true;
+      case 'scheduled':
+        return availableAt == null || availableAt!.isAfter(DateTime.now());
+      default:
+        return false;
+    }
+  }
+
+  /// Why a locked lesson cannot be opened yet.
+  String get lockedReason {
+    if (availability.toLowerCase() == 'scheduled' && availableAt != null) {
+      final d = availableAt!;
+      String two(int n) => n.toString().padLeft(2, '0');
+      return 'Opens on ${d.year}-${two(d.month)}-${two(d.day)} at ${two(d.hour)}:${two(d.minute)}.';
+    }
+    return 'Your teacher has not opened this lesson yet.';
+  }
   bool get isFree => availability.toLowerCase() == 'free' || isFreePreview;
   bool get hasVideo => videoUrl != null && videoUrl!.isNotEmpty;
   bool get hasAudio => audioUrl != null && audioUrl!.isNotEmpty;
@@ -96,6 +127,7 @@ class Lesson {
         'description': description,
         'status': status,
         'availability': availability,
+        'available_at': availableAt?.toUtc().toIso8601String(),
         'order': order,
         'video_url': videoUrl,
         'audio_url': audioUrl,
@@ -107,6 +139,7 @@ class Lesson {
         'duration_formatted': durationFormatted,
         'is_free_preview': isFreePreview,
         'resources': resources.map((r) => r.toJson()).toList(),
+        'is_completed': isCompleted,
       };
 
   @override

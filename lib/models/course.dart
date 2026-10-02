@@ -25,8 +25,8 @@ class Course {
                 json['category_id'])
             ?.toString() ??
             '',
-        objectives: json['objectives'] != null
-            ? List<String>.from(json['objectives'] as List)
+        objectives: (json['objectives'] ?? json['learning_objectives']) != null
+            ? List<String>.from((json['objectives'] ?? json['learning_objectives']) as List)
             : const [],
         difficultyLevel: (json['difficultyLevel'] ??
                 json['difficulty_level'] ??
@@ -34,9 +34,9 @@ class Course {
         isPublished: (json['isPublished'] ??
                 json['is_published'] ??
                 (json['status'] == 'published')) as bool,
-        lessonIds: json['lessonIds'] != null
-            ? List<String>.from(
-                (json['lessonIds'] as List).map((e) => e.toString()))
+        lessonIds: (json['lessonIds'] ?? json['lesson_ids']) != null
+            ? List<String>.from(((json['lessonIds'] ?? json['lesson_ids']) as List)
+                .map((e) => e.toString()))
             : (json['lessons'] != null && json['lessons'] is List
                 ? List<String>.from((json['lessons'] as List)
                     .map((l) => (l is Map ? l['id'] : l).toString()))

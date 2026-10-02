@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme.dart';
-import 'data/mock/mock_lesson_repository.dart';
-import 'data/repositories/lesson_repository.dart';
 import 'providers/auth_provider.dart';
-import 'providers/lesson_provider.dart';
 import 'ui/screens/auth/forgot_password_screen.dart';
 import 'ui/screens/auth/login_screen.dart';
 import 'ui/screens/auth/profile_screen.dart';
@@ -24,7 +21,7 @@ class MicroLearnApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget app = MaterialApp(
+    return MaterialApp(
       title: 'MicroLearn',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
@@ -69,28 +66,6 @@ class MicroLearnApp extends StatelessWidget {
         },
       },
     );
-
-    bool hasLessonProvider = false;
-    try {
-      Provider.of<LessonProvider>(context, listen: false);
-      hasLessonProvider = true;
-    } catch (_) {
-      hasLessonProvider = false;
-    }
-
-    if (!hasLessonProvider) {
-      app = MultiProvider(
-        providers: [
-          Provider<LessonRepository>(create: (_) => MockLessonRepository()),
-          ChangeNotifierProvider<LessonProvider>(
-            create: (ctx) => LessonProvider(repo: MockLessonRepository()),
-          ),
-        ],
-        child: app,
-      );
-    }
-
-    return app;
   }
 }
 
@@ -102,6 +77,13 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
+    if (auth.isRestoring) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.goldPrimary),
+        ),
+      );
+    }
     if (auth.isAuthenticated) {
       return const HomeShell();
     }

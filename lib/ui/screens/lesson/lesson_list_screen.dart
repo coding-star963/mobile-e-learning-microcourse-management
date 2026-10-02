@@ -208,9 +208,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
         onTap: isLocked
             ? () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text(
-                      'This lesson is locked. Complete earlier modules first.',
+                      lesson.lockedReason,
                     ),
                   ),
                 );

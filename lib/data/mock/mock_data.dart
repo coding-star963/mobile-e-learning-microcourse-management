@@ -5,6 +5,7 @@
 // Module 1 currently consumes the user + credential seeds. Later modules will
 // append their own seeds here (courses, lessons, enrollments, ...).
 import '../../core/constants.dart';
+import '../../models/announcement.dart';
 import '../../models/course.dart';
 import '../../models/course_category.dart';
 import '../../models/enrollment.dart';
@@ -109,6 +110,7 @@ class MockData {
       ..addAll(enrollmentSeed());
     profileOverrides.clear();
     passwordResetRequests.clear();
+    notificationsSeenAt.clear();
   }
 
   /// Fresh [Enrollment] copies for one student, parsed through `fromJson`.
@@ -470,4 +472,49 @@ class MockData {
     if (match.isEmpty) return null;
     return Lesson.fromJson(match);
   }
+
+  // ===========================================================================
+  // Module 6 — Announcements & Notifications seeds (6.1–6.4)
+  // ===========================================================================
+
+  /// Published announcements visible to the demo student: general ones and
+  /// ones for enrolled courses (course-001, course-003, course-004).
+  static final List<Map<String, dynamic>> announcementJson = [
+    {
+      'id': 'announcement-001',
+      'title': 'Welcome to the new semester',
+      'content': 'Browse the catalog and enroll in the micro-courses for your section.',
+      'type': 'general',
+      'course_id': null,
+      'courseTitle': null,
+      'authorName': 'Admin User',
+      'published_at': '2026-09-01T08:00:00.000Z',
+    },
+    {
+      'id': 'announcement-002',
+      'title': 'New lesson: High-Performance Widgets & Layouts',
+      'content': 'A new lesson is now available in Intro to Flutter.',
+      'type': 'course_update',
+      'course_id': 'course-001',
+      'courseTitle': 'Intro to Flutter',
+      'authorName': 'Sarah Johnson',
+      'published_at': '2026-09-20T10:30:00.000Z',
+    },
+    {
+      'id': 'announcement-003',
+      'title': 'Quiz schedule moved',
+      'content': 'The HTML & CSS quiz moves to Friday. Review lessons 1 to 3.',
+      'type': 'important',
+      'course_id': 'course-003',
+      'courseTitle': 'HTML & CSS Basics',
+      'authorName': 'Sarah Johnson',
+      'published_at': '2026-09-25T13:00:00.000Z',
+    },
+  ];
+
+  static List<Announcement> get announcements =>
+      announcementJson.map(Announcement.fromJson).toList();
+
+  /// When each student last opened their notifications (6.3).
+  static final Map<String, DateTime> notificationsSeenAt = {};
 }

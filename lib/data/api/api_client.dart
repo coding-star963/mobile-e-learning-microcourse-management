@@ -4,6 +4,17 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Error from the REST API with a message that is safe to show to students.
+class ApiException implements Exception {
+  const ApiException(this.message, {this.statusCode = 0});
+
+  final String message;
+  final int statusCode;
+
+  @override
+  String toString() => message;
+}
+
 class ApiResponse {
   final int statusCode;
   final dynamic data;
@@ -30,14 +41,25 @@ class ApiClient {
   static const String _serverUrlKey = 'backend_server_url';
 
   // Default server address:
+  // Build override -> flutter run --dart-define=API_BASE_URL=http://<laptop-ip>:8000/api
   // On Edge/Web -> http://127.0.0.1:8000/api
   // On physical mobile -> http://192.168.8.56:8000/api (local Wi-Fi LAN IP)
+  // It can also be changed in the app: long-press the logo on the login screen,
+  // or use Server Endpoint on the profile screen.
+  static const String _buildBaseUrl = String.fromEnvironment('API_BASE_URL');
+
   static String get defaultBaseUrl {
+    if (_buildBaseUrl.isNotEmpty) {
+      return _buildBaseUrl;
+    }
     if (kIsWeb) {
       return 'http://127.0.0.1:8000/api';
     }
     return 'http://192.168.8.56:8000/api';
   }
+
+  /// Generous enough for slow Wi-Fi and for requests that send email (password reset).
+  static const Duration _timeout = Duration(seconds: 20);
 
   String? _cachedBaseUrl;
   String? _cachedToken;
@@ -125,7 +147,7 @@ class ApiClient {
       final base = await baseUrl;
       final uri = _buildUri(path, base, query);
       final headers = await _headers();
-      final res = await http.get(uri, headers: headers).timeout(const Duration(seconds: 8));
+      final res = await http.get(uri, headers: headers).timeout(_timeout);
       return _parseResponse(res);
     } catch (e) {
       return ApiResponse(
@@ -144,7 +166,7 @@ class ApiClient {
       final headers = await _headers();
       final res = await http
           .post(uri, headers: headers, body: body != null ? jsonEncode(body) : null)
-          .timeout(const Duration(seconds: 8));
+          .timeout(_timeout);
       return _parseResponse(res);
     } catch (e) {
       return ApiResponse(
@@ -163,7 +185,7 @@ class ApiClient {
       final headers = await _headers();
       final res = await http
           .put(uri, headers: headers, body: body != null ? jsonEncode(body) : null)
-          .timeout(const Duration(seconds: 8));
+          .timeout(_timeout);
       return _parseResponse(res);
     } catch (e) {
       return ApiResponse(
@@ -173,6 +195,61 @@ class ApiClient {
         message: 'Network error: $e',
       );
     }
+  }
+
+  /// Uploads one file as multipart/form-data (e.g. a profile photo).
+  Future<ApiResponse> postFile(
+    String path, {
+    required String field,
+    required List<int> bytes,
+    required String fileName,
+  }) async {
+    try {
+      final base = await baseUrl;
+      final request = http.MultipartRequest('POST', _buildUri(path, base));
+      final headers = await _headers();
+      headers.remove('Content-Type');
+      request.headers.addAll(headers);
+      request.files.add(http.MultipartFile.fromBytes(field, bytes, filename: fileName));
+      final streamed = await request.send().timeout(const Duration(seconds: 30));
+      return _parseResponse(await http.Response.fromStream(streamed));
+    } catch (e) {
+      return ApiResponse(
+        statusCode: 0,
+        data: null,
+        isSuccess: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  /// Friendly message for a failed [ApiResponse].
+  String errorMessage(ApiResponse res, String fallback) {
+    if (res.statusCode == 0) {
+      return 'Cannot reach the server. Check your connection and the server address.';
+    }
+    if (res.statusCode == 401) {
+      return 'Your session has expired. Please log in again.';
+    }
+    return res.message ?? fallback;
+  }
+
+  /// Throws an [ApiException] for a failed [ApiResponse].
+  Never fail(ApiResponse res, String fallback) =>
+      throw ApiException(errorMessage(res, fallback), statusCode: res.statusCode);
+
+  /// The `data` list of a Laravel resource collection response.
+  static List<Map<String, dynamic>> dataList(dynamic body) {
+    final list = body is Map && body.containsKey('data') ? body['data'] : body;
+    if (list is! List) return const [];
+    return list.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+  }
+
+  /// A single resource from a response: `{data: {...}}`, `{<key>: {...}}`, or the body itself.
+  static Map<String, dynamic>? dataItem(dynamic body, [String? key]) {
+    if (body is! Map) return null;
+    final item = body['data'] ?? (key != null ? body[key] : null) ?? body;
+    return item is Map ? Map<String, dynamic>.from(item) : null;
   }
 
   ApiResponse _parseResponse(http.Response res) {
