@@ -20,7 +20,19 @@ class EnrollmentProvider extends ChangeNotifier {
   final Map<String, Enrollment?> _enrollmentByCourse = {};
 
   /// 3.2 View Enrolled Courses — loads all enrollments for the student.
-  Future<void> loadEnrollments(String studentId) async {
+  /// [silent] refreshes in the background: no spinner, and the current list
+  /// stays on screen if the request fails.
+  Future<void> loadEnrollments(String studentId, {bool silent = false}) async {
+    if (silent) {
+      try {
+        enrollments = await _enrollmentRepository.getMyEnrollments(studentId);
+        // Course screens re-check their enrollment against the fresh data.
+        _enrollmentByCourse.clear();
+        error = null;
+        notifyListeners();
+      } on Exception catch (_) {}
+      return;
+    }
     isLoading = true;
     error = null;
     notifyListeners();

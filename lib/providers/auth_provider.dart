@@ -71,11 +71,28 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// True unless the server rejected the saved session (e.g. an administrator
+  /// deactivated this account on the web portal).
+  Future<bool> isSessionValid() => _authRepository.isSessionValid();
+
+  /// Returns to the login screen after the server ended the session.
+  void endRejectedSession() {
+    user = null;
+    status = AuthStatus.unauthenticated;
+    error = 'Your session has ended or your account was deactivated. '
+        'Please log in again.';
+    notifyListeners();
+  }
+
+  /// Reset token from the last request when the server runs locally; else null.
+  String? devResetToken;
+
   /// 1.3 Password Recovery — requests a reset; returns true on success.
   Future<bool> requestPasswordReset(String email) async {
     _setBusy(AuthStatus.submitting);
+    devResetToken = null;
     try {
-      await _authRepository.requestPasswordReset(email);
+      devResetToken = await _authRepository.requestPasswordReset(email);
       error = null;
       status = AuthStatus.unauthenticated;
       notifyListeners();

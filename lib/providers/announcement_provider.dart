@@ -32,8 +32,19 @@ class AnnouncementProvider extends ChangeNotifier {
 
   int get unreadCount => unread.length;
 
-  /// 6.1 View Announcements
-  Future<void> load(String studentId) async {
+  /// 6.1 View Announcements. [silent] refreshes in the background: no
+  /// spinner, and the current list stays on screen if the request fails.
+  Future<void> load(String studentId, {bool silent = false}) async {
+    if (silent) {
+      try {
+        final latest = await _repository.getAnnouncements(studentId);
+        seenAt = await _repository.getNotificationsSeenAt(studentId);
+        announcements = latest;
+        error = null;
+        notifyListeners();
+      } on Exception catch (_) {}
+      return;
+    }
     isLoading = true;
     error = null;
     notifyListeners();

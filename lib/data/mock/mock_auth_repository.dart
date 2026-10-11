@@ -31,15 +31,20 @@ class MockAuthRepository implements AuthRepository {
     await Future<void>.delayed(AppConstants.mockLatency);
   }
 
+  /// Mock sessions never expire.
+  @override
+  Future<bool> isSessionValid() async => true;
+
   /// 1.3 Password Recovery — records the reset request; fails for unknown emails.
   @override
-  Future<void> requestPasswordReset(String email) async {
+  Future<String?> requestPasswordReset(String email) async {
     await Future<void>.delayed(AppConstants.mockLatency);
     final key = email.toLowerCase().trim();
     if (!MockData.accountExists(key)) {
       throw const AuthException('No account found with that email address.');
     }
     MockData.passwordResetRequests.add(key);
+    return null;
   }
 
   /// 1.3 Password Recovery — accepts any token for an email that requested a reset.

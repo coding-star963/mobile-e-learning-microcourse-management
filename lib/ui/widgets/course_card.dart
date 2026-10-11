@@ -51,6 +51,9 @@ class CourseCard extends StatelessWidget {
                           Image.network(
                             course.thumbnailUrl!,
                             fit: BoxFit.cover,
+                            // On web, /storage files have no CORS headers.
+                            webHtmlElementStrategy:
+                                WebHtmlElementStrategy.fallback,
                             errorBuilder: (_, _, _) =>
                                 _thumbPlaceholder(),
                           )

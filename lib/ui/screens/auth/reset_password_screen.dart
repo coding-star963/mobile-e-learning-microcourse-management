@@ -7,9 +7,12 @@ import '../../../providers/auth_provider.dart';
 /// 1.3 Password Recovery — second step: paste the token from the reset email
 /// and choose a new password.
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key, required this.email});
+  const ResetPasswordScreen({super.key, required this.email, this.initialToken});
 
   final String email;
+
+  /// Pre-filled token when the server runs locally and returns it directly.
+  final String? initialToken;
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -17,7 +20,7 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _tokenController = TextEditingController();
+  late final _tokenController = TextEditingController(text: widget.initialToken);
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _obscure = true;

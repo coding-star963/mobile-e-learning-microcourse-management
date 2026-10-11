@@ -14,4 +14,8 @@ class AppConstants {
 
   /// Simulated network latency for mock repositories (AGENT.md §6).
   static const Duration mockLatency = Duration(milliseconds: 300);
+
+  /// How often open screens re-check the server so changes made on the web
+  /// portal appear on the phone without a manual refresh.
+  static const Duration autoRefreshInterval = Duration(seconds: 10);
 }

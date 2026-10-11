@@ -67,13 +67,26 @@ class RestAuthRepository implements AuthRepository {
     await _api.clearToken();
   }
 
-  /// 1.3 Password Recovery — the reset instructions are emailed by the server.
   @override
-  Future<void> requestPasswordReset(String email) async {
+  Future<bool> isSessionValid() async {
+    final res = await _api.get('/user');
+    if (res.statusCode == 401 || res.statusCode == 403) {
+      await _api.clearToken();
+      return false;
+    }
+    return true;
+  }
+
+  /// 1.3 Password Recovery — the reset instructions are emailed by the server.
+  /// A local backend also returns the token as `dev_token`.
+  @override
+  Future<String?> requestPasswordReset(String email) async {
     final res = await _api.post('/forgot-password', body: {'email': email.trim()});
     if (!res.isSuccess) {
       throw AuthException(_api.errorMessage(res, 'Failed to request password reset.'));
     }
+    final data = res.data;
+    return data is Map ? data['dev_token'] as String? : null;
   }
 
   @override

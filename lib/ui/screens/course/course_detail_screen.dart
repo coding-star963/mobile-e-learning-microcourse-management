@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/auto_refresh.dart';
 import '../../../core/theme.dart';
 import '../../../data/repositories/course_repository.dart';
 import '../../../models/course.dart';
@@ -22,7 +23,8 @@ class CourseDetailScreen extends StatefulWidget {
   State<CourseDetailScreen> createState() => _CourseDetailScreenState();
 }
 
-class _CourseDetailScreenState extends State<CourseDetailScreen> {
+class _CourseDetailScreenState extends State<CourseDetailScreen>
+    with AutoRefresh {
   Course? _course;
   bool _isLoading = true;
   String? _error;
@@ -33,6 +35,23 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   void initState() {
     super.initState();
     _loadCourse();
+  }
+
+  /// Picks up course edits and enrollment changes made on the web portal.
+  /// Lessons are refreshed by the home shell through [LessonProvider].
+  @override
+  Future<void> onAutoRefresh() async {
+    if (_course == null || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    try {
+      final course = await context
+          .read<CourseProvider>()
+          .loadCourseDetails(widget.courseId);
+      if (!mounted) return;
+      setState(() => _course = course);
+      await _loadEnrollmentState(forceRefresh: true);
+    } on Exception catch (_) {
+      // Keep showing the current details; the next refresh retries.
+    }
   }
 
   Future<void> _loadCourse() async {
@@ -64,7 +83,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     }
   }
 
-  Future<void> _loadEnrollmentState() async {
+  Future<void> _loadEnrollmentState({bool forceRefresh = false}) async {
     AuthProvider? auth;
     try {
       auth = context.read<AuthProvider>();
@@ -74,7 +93,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     try {
       final enrollment = await context
           .read<EnrollmentProvider>()
-          .getEnrollmentForCourse(studentId: user.id, courseId: widget.courseId);
+          .getEnrollmentForCourse(
+            studentId: user.id,
+            courseId: widget.courseId,
+            forceRefresh: forceRefresh,
+          );
       if (!mounted) return;
       setState(() {
         _myEnrollment = enrollment;
@@ -560,6 +583,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             Image.network(
               course.thumbnailUrl!,
               fit: BoxFit.cover,
+              // On web, /storage files have no CORS headers.
+              webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
               errorBuilder: (_, _, _) => const SizedBox(),
             ),
           Container(

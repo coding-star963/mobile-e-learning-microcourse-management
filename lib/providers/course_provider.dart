@@ -49,6 +49,27 @@ class CourseProvider extends ChangeNotifier {
     }
   }
 
+  /// Background refresh of the catalog that keeps the current search or
+  /// category filter; the current list stays on screen if the request fails.
+  Future<void> refresh() async {
+    try {
+      final results = await Future.wait([
+        _courseRepository.getCategories(),
+        searchQuery.isNotEmpty
+            ? _courseRepository.searchCourses(searchQuery)
+            : selectedCategoryId != null
+                ? _courseRepository.getCoursesByCategory(selectedCategoryId!)
+                : _courseRepository.getPublishedCourses(),
+      ]);
+      categories = results[0] as List<CourseCategory>;
+      courses = results[1] as List<Course>;
+      error = null;
+      notifyListeners();
+    } on Exception catch (e) {
+      debugPrint('CourseProvider.refresh failed: $e');
+    }
+  }
+
   /// 2.2 Search Courses — updates the query and refilters the catalog.
   Future<void> search(String query) async {
     searchQuery = query;

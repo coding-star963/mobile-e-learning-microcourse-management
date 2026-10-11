@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/auto_refresh.dart';
 import '../../../core/theme.dart';
 import '../../../providers/announcement_provider.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/course_provider.dart';
 import '../../../providers/dashboard_provider.dart';
 import '../../../providers/enrollment_provider.dart';
+import '../../../providers/lesson_provider.dart';
 import '../../screens/course/catalog_view.dart';
 import '../../screens/enrollment/my_courses_screen.dart';
 import '../notifications/announcements_screen.dart';
@@ -21,13 +24,44 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
+class _HomeShellState extends State<HomeShell> with AutoRefresh {
   int _tabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadOverview());
+  }
+
+  /// Keeps every tab, the notification bell and any open lesson screens in
+  /// sync with changes made on the web portal. The shell stays mounted under
+  /// pushed screens, so this also runs while a course or lesson is open.
+  @override
+  Future<void> onAutoRefresh() async {
+    final auth = context.read<AuthProvider>();
+    final studentId = auth.user?.id;
+    if (studentId == null) return;
+    final navigator = Navigator.of(context);
+    final dashboard = context.read<DashboardProvider>();
+    final announcements = context.read<AnnouncementProvider>();
+    final courses = context.read<CourseProvider>();
+    final enrollments = context.read<EnrollmentProvider>();
+    final lessons = context.read<LessonProvider>();
+
+    // e.g. an administrator deactivated this student on the web portal.
+    if (!await auth.isSessionValid()) {
+      navigator.popUntil((route) => route.isFirst);
+      auth.endRejectedSession();
+      return;
+    }
+
+    await Future.wait([
+      dashboard.load(studentId, silent: true),
+      announcements.load(studentId, silent: true),
+      courses.refresh(),
+      enrollments.loadEnrollments(studentId, silent: true),
+      lessons.refreshLoaded(),
+    ]);
   }
 
   /// 7.1 dashboard and 6.3 notification count for the signed-in student.

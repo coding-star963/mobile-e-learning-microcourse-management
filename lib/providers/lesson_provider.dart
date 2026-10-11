@@ -28,6 +28,25 @@ class LessonProvider extends ChangeNotifier {
 
   bool isCompleted(String lessonId) => _completedLessonIds.contains(lessonId);
 
+  /// Background refresh of every course whose lessons have been opened, so
+  /// new, edited, locked or scheduled lessons appear without a manual refresh.
+  /// The list includes each lesson's resources, so open lessons update too.
+  Future<void> refreshLoaded() async {
+    for (final courseId in _courseLessons.keys.toList()) {
+      try {
+        final lessons = await repo.getLessonsForCourse(courseId);
+        _courseLessons[courseId] = lessons;
+        for (final l in lessons) {
+          _lessonDetails[l.id] = l;
+          _rememberCompletion(l);
+        }
+        notifyListeners();
+      } catch (_) {
+        // Keep the current lessons; the next refresh retries.
+      }
+    }
+  }
+
   /// 4.1 View Course Lessons
   Future<void> loadLessons(String courseId) async {
     _isLoading = true;

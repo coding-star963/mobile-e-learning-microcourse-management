@@ -161,7 +161,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CircleAvatar(
                       backgroundColor: AppTheme.bgCard,
                       foregroundImage: (user?.photoUrl?.startsWith('http') ?? false)
-                          ? NetworkImage(user!.photoUrl!)
+                          // Fallback: on web, /storage files have no CORS headers.
+                          ? NetworkImage(
+                              user!.photoUrl!,
+                              webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+                            )
                           : null,
                       onForegroundImageError: (user?.photoUrl?.startsWith('http') ?? false)
                           ? (_, _) {}

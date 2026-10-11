@@ -24,9 +24,14 @@ abstract class AuthRepository {
   /// 1.2 Logout — ends the authenticated session.
   Future<void> logout();
 
+  /// False only when the server rejects the saved session (expired, revoked,
+  /// or deactivated account). Network errors count as valid.
+  Future<bool> isSessionValid();
+
   /// 1.3 Password Recovery — requests a password reset for the given email.
-  /// Throws [AuthException] if the email is not recognized.
-  Future<void> requestPasswordReset(String email);
+  /// Returns the reset token only when the server runs locally (no real email);
+  /// otherwise null. Throws [AuthException] if the email is not recognized.
+  Future<String?> requestPasswordReset(String email);
 
   /// 1.3 Password Recovery — sets a new password using the emailed reset token.
   /// Throws [AuthException] when the token is invalid or expired.
