@@ -39,23 +39,40 @@ class ApiClient {
   static const String _tokenKey = 'auth_bearer_token';
   static const String _userKey = 'auth_user_json';
   static const String _serverUrlKey = 'backend_server_url';
+  static const String _lastDartDefineKey = 'last_dart_define_base_url';
+
+  static const String _defaultLanIp = '192.168.8.62';
+  static const String _staleLanIp = '192.168.8.56';
 
   // Default server address:
   // Build override -> flutter run --dart-define=API_BASE_URL=http://<laptop-ip>:8000/api
   // On Edge/Web -> http://127.0.0.1:8000/api
-  // On physical mobile -> http://192.168.8.56:8000/api (local Wi-Fi LAN IP)
+  // On physical mobile -> http://192.168.8.62:8000/api (local Wi-Fi LAN IP)
   // It can also be changed in the app: long-press the logo on the login screen,
   // or use Server Endpoint on the profile screen.
   static const String _buildBaseUrl = String.fromEnvironment('API_BASE_URL');
 
+  /// Normalizes any input URL by trimming whitespace, stripping trailing slashes,
+  /// and ensuring it ends with `/api`.
+  static String normalizeUrl(String url) {
+    var cleaned = url.trim();
+    while (cleaned.endsWith('/')) {
+      cleaned = cleaned.substring(0, cleaned.length - 1);
+    }
+    if (!cleaned.endsWith('/api')) {
+      cleaned = '$cleaned/api';
+    }
+    return cleaned;
+  }
+
   static String get defaultBaseUrl {
     if (_buildBaseUrl.isNotEmpty) {
-      return _buildBaseUrl;
+      return normalizeUrl(_buildBaseUrl);
     }
     if (kIsWeb) {
       return 'http://127.0.0.1:8000/api';
     }
-    return 'http://192.168.8.56:8000/api';
+    return 'http://$_defaultLanIp:8000/api';
   }
 
   /// Generous enough for slow Wi-Fi and for requests that send email (password reset).
@@ -67,18 +84,33 @@ class ApiClient {
   Future<String> get baseUrl async {
     if (_cachedBaseUrl != null) return _cachedBaseUrl!;
     final prefs = await SharedPreferences.getInstance();
-    _cachedBaseUrl = prefs.getString(_serverUrlKey) ?? defaultBaseUrl;
+
+    // If an explicit --dart-define=API_BASE_URL was supplied at build/run time,
+    // ensure it overrides previously cached endpoints if it changed or was never recorded.
+    if (_buildBaseUrl.isNotEmpty) {
+      final lastBuild = prefs.getString(_lastDartDefineKey);
+      if (lastBuild != _buildBaseUrl) {
+        final cleaned = normalizeUrl(_buildBaseUrl);
+        await prefs.setString(_serverUrlKey, cleaned);
+        await prefs.setString(_lastDartDefineKey, _buildBaseUrl);
+        _cachedBaseUrl = cleaned;
+        return cleaned;
+      }
+    }
+
+    var saved = prefs.getString(_serverUrlKey);
+    // If the device has the old stale fallback saved from previous test runs, update to new LAN IP
+    if (saved != null && saved.contains(_staleLanIp)) {
+      saved = saved.replaceAll(_staleLanIp, _defaultLanIp);
+      await prefs.setString(_serverUrlKey, saved);
+    }
+
+    _cachedBaseUrl = saved != null ? normalizeUrl(saved) : defaultBaseUrl;
     return _cachedBaseUrl!;
   }
 
   Future<void> setBaseUrl(String url) async {
-    var cleaned = url.trim();
-    if (cleaned.endsWith('/')) {
-      cleaned = cleaned.substring(0, cleaned.length - 1);
-    }
-    if (!cleaned.endsWith('/api')) {
-      cleaned = '$cleaned/api';
-    }
+    final cleaned = normalizeUrl(url);
     _cachedBaseUrl = cleaned;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_serverUrlKey, cleaned);

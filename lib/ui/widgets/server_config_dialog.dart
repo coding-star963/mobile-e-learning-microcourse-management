@@ -39,7 +39,7 @@ Future<String?> showServerConfigDialog(BuildContext context) async {
             controller: controller,
             style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
             decoration: const InputDecoration(
-              hintText: 'http://192.168.8.56:8000/api',
+              hintText: 'http://192.168.8.62:8000/api',
               labelText: 'API Base URL',
             ),
           ),
