@@ -28,12 +28,12 @@ abstract class AuthRepository {
   /// or deactivated account). Network errors count as valid.
   Future<bool> isSessionValid();
 
-  /// 1.3 Password Recovery — requests a password reset for the given email.
-  /// Returns the reset token only when the server runs locally (no real email);
-  /// otherwise null. Throws [AuthException] if the email is not recognized.
-  Future<String?> requestPasswordReset(String email);
+  /// 1.3 Password Recovery — checks that the email belongs to an account and
+  /// returns a short-lived reset token for [resetPassword] (no email or OTP).
+  /// Throws [AuthException] if the email is not recognized.
+  Future<String> requestPasswordReset(String email);
 
-  /// 1.3 Password Recovery — sets a new password using the emailed reset token.
+  /// 1.3 Password Recovery — sets a new password using the reset token.
   /// Throws [AuthException] when the token is invalid or expired.
   Future<void> resetPassword({
     required String email,

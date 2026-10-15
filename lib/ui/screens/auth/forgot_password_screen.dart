@@ -30,18 +30,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final email = _emailController.text.trim();
     final ok = await auth.requestPasswordReset(email);
     if (!mounted || !ok) return;
-    final devToken = auth.devResetToken;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(devToken != null
-            ? 'Local mode: no email sent. The reset token is filled in for you.'
-            : 'Password reset link sent. Check your email inbox.'),
-      ),
-    );
-    // Step 2: enter the emailed token and a new password.
+    // Email found: step 2, choose a new password.
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => ResetPasswordScreen(email: email, initialToken: devToken),
+        builder: (_) => ResetPasswordScreen(email: email, token: auth.resetToken!),
       ),
     );
   }
@@ -94,7 +86,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Enter your verified email to receive secure recovery access.',
+                'Enter the email of your account, then choose a new password.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppTheme.textSecondary,
@@ -149,7 +141,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ),
                         )
                       : const Text(
-                          'Send reset link',
+                          'Continue',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.5,

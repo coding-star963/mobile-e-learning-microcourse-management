@@ -84,15 +84,15 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Reset token from the last request when the server runs locally; else null.
-  String? devResetToken;
+  /// Reset token from the last successful [requestPasswordReset]; else null.
+  String? resetToken;
 
   /// 1.3 Password Recovery — requests a reset; returns true on success.
   Future<bool> requestPasswordReset(String email) async {
     _setBusy(AuthStatus.submitting);
-    devResetToken = null;
+    resetToken = null;
     try {
-      devResetToken = await _authRepository.requestPasswordReset(email);
+      resetToken = await _authRepository.requestPasswordReset(email);
       error = null;
       status = AuthStatus.unauthenticated;
       notifyListeners();

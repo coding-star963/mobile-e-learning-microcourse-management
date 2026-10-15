@@ -46,6 +46,7 @@ class ApiClient {
 
   // Default server address:
   // Build override -> flutter run --dart-define=API_BASE_URL=http://<laptop-ip>:8000/api
+  // Through ngrok  -> flutter build apk --dart-define=API_BASE_URL=https://<your-domain>.ngrok-free.app/api
   // On Edge/Web -> http://127.0.0.1:8000/api
   // On physical mobile -> http://192.168.8.62:8000/api (local Wi-Fi LAN IP)
   // It can also be changed in the app: long-press the logo on the login screen,
@@ -157,6 +158,8 @@ class ApiClient {
     final headers = <String, String>{
       'Accept': 'application/json',
       'Content-Type': 'application/json',
+      // Skips the ngrok free-plan warning page when the API is reached through ngrok.
+      'ngrok-skip-browser-warning': 'true',
     };
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';

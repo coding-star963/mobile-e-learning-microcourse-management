@@ -4,15 +4,15 @@ import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
 import '../../../providers/auth_provider.dart';
 
-/// 1.3 Password Recovery — second step: paste the token from the reset email
-/// and choose a new password.
+/// 1.3 Password Recovery — second step: choose a new password for the
+/// email verified on the previous screen.
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key, required this.email, this.initialToken});
+  const ResetPasswordScreen({super.key, required this.email, required this.token});
 
   final String email;
 
-  /// Pre-filled token when the server runs locally and returns it directly.
-  final String? initialToken;
+  /// Short-lived token returned by the server when the email was verified.
+  final String token;
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -20,14 +20,12 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final _tokenController = TextEditingController(text: widget.initialToken);
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _obscure = true;
 
   @override
   void dispose() {
-    _tokenController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
@@ -39,7 +37,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     final auth = context.read<AuthProvider>();
     final ok = await auth.resetPassword(
       email: widget.email,
-      token: _tokenController.text,
+      token: widget.token,
       newPassword: _passwordController.text,
     );
     if (!mounted || !ok) return;
@@ -62,10 +60,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(Icons.mark_email_read_outlined, size: 48, color: AppTheme.goldPrimary),
+              const Icon(Icons.lock_reset_rounded, size: 48, color: AppTheme.goldPrimary),
               const SizedBox(height: 16),
               const Text(
-                'Check your email',
+                'Set a new password',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppTheme.textPrimary,
@@ -75,21 +73,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'We sent a reset token to ${widget.email}. Paste it below and choose a new password.',
+                'Choose a new password for ${widget.email}.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.4),
               ),
               const SizedBox(height: 28),
-              TextFormField(
-                controller: _tokenController,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                decoration: const InputDecoration(
-                  labelText: 'Reset token',
-                  prefixIcon: Icon(Icons.key_outlined, color: AppTheme.goldPrimary),
-                ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Paste the token from the email.' : null,
-              ),
-              const SizedBox(height: 14),
               TextFormField(
                 controller: _passwordController,
                 obscureText: _obscure,

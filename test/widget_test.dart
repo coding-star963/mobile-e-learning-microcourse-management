@@ -130,7 +130,7 @@ void main() {
   });
 
   group('1.3 Password Recovery', () {
-    testWidgets('sends a reset request for the demo account', (tester) async {
+    testWidgets('verifies the email then sets a new password (no OTP)', (tester) async {
       await tester.pumpWidget(appUnderTest());
       await tester.pumpAndSettle();
 
@@ -141,17 +141,12 @@ void main() {
         find.widgetWithText(TextFormField, 'Email'),
         AppConstants.demoEmail,
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Send reset link'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Password reset link sent. Check your email inbox.'),
-        findsOneWidget,
-      );
-
-      // Step 2: enter the emailed token and a new password.
-      expect(find.text('Check your email'), findsOneWidget);
-      await tester.enterText(find.widgetWithText(TextFormField, 'Reset token'), 'token-from-email');
+      // Step 2: straight to the new password form, no token field.
+      expect(find.text('Set a new password'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Reset token'), findsNothing);
       // Reuse the demo password so later tests can still log in (shared mock state).
       await tester.enterText(find.widgetWithText(TextFormField, 'New password'), AppConstants.demoPassword);
       await tester.enterText(
@@ -176,7 +171,7 @@ void main() {
         find.widgetWithText(TextFormField, 'Email'),
         'nobody@nowhere.com',
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Send reset link'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
       await tester.pumpAndSettle();
 
       expect(
