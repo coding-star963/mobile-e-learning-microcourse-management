@@ -18,6 +18,14 @@ abstract class AuthRepository {
   /// Throws [AuthException] on invalid credentials.
   Future<AppUser> login({required String email, required String password});
 
+  /// 1.1 Registration — creates a student account (Gmail address only) and
+  /// signs it in. Throws [AuthException] when the details are rejected.
+  Future<AppUser> register({
+    required String fullName,
+    required String email,
+    required String password,
+  });
+
   /// 1.1 Login — resumes a saved session on app start (null = log in again).
   Future<AppUser?> restoreSession();
 

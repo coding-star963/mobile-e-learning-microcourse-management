@@ -1,4 +1,5 @@
 import '../../core/constants.dart';
+import '../../core/validators.dart';
 import '../../models/user.dart';
 import '../repositories/auth_repository.dart';
 import 'mock_data.dart';
@@ -18,6 +19,33 @@ class MockAuthRepository implements AuthRepository {
     if (account == null || account['password'] != password) {
       throw const AuthException('Incorrect email or password.');
     }
+    return MockData.userFor(key);
+  }
+
+  /// 1.1 Registration — adds a student account to the in-memory seeds.
+  @override
+  Future<AppUser> register({
+    required String fullName,
+    required String email,
+    required String password,
+  }) async {
+    await Future<void>.delayed(AppConstants.mockLatency);
+    final key = email.toLowerCase().trim();
+    if (!Validators.isGmail(key)) {
+      throw const AuthException(Validators.gmailError);
+    }
+    if (MockData.accountExists(key)) {
+      throw const AuthException('An account with this email already exists.');
+    }
+    MockData.accountJsonByName[key] = {
+      'user': {
+        'id': 'student-${MockData.accountJsonByName.length + 1}',
+        'fullName': fullName.trim(),
+        'email': key,
+        'photoUrl': null,
+      },
+      'password': password,
+    };
     return MockData.userFor(key);
   }
 

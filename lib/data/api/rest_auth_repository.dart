@@ -42,6 +42,37 @@ class RestAuthRepository implements AuthRepository {
     return AppUser.fromJson(userMap);
   }
 
+  /// 1.1 Registration — the server always creates a student account.
+  @override
+  Future<AppUser> register({
+    required String fullName,
+    required String email,
+    required String password,
+  }) async {
+    final res = await _api.post('/register', body: {
+      'name': fullName.trim(),
+      'email': email.trim(),
+      'password': password,
+      'password_confirmation': password,
+    });
+
+    if (!res.isSuccess) {
+      throw AuthException(_api.errorMessage(res, 'Could not create your account.'));
+    }
+
+    final data = res.data is Map ? res.data as Map : const {};
+    final token = data['token']?.toString() ?? '';
+    final userData = data['user'];
+    if (token.isEmpty || userData is! Map) {
+      throw const AuthException('Unexpected response from the server.');
+    }
+
+    final userMap = Map<String, dynamic>.from(userData);
+    await _api.saveToken(token);
+    await _api.saveUserJson(userMap);
+    return AppUser.fromJson(userMap);
+  }
+
   /// 1.1 Resume the saved session if its token is still valid.
   @override
   Future<AppUser?> restoreSession() async {

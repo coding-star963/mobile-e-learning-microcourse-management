@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme.dart';
+import '../../../models/enrollment.dart';
 import '../../../models/lesson.dart';
 import '../../../providers/course_provider.dart';
+import '../../../providers/enrollment_provider.dart';
 import '../../../providers/lesson_provider.dart';
 import '../lesson/lesson_detail_screen.dart';
 import '../lesson/lesson_list_screen.dart';
@@ -39,6 +41,16 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
       lessonProvider = context.watch<LessonProvider>();
     } catch (_) {}
     final lessons = lessonProvider?.lessonsFor(widget.courseId) ?? const [];
+
+    // A teacher may have suspended or cancelled this enrollment on the web portal.
+    EnrollmentStatus? enrollmentStatus;
+    try {
+      for (final e in context.watch<EnrollmentProvider>().enrollments) {
+        if (e.courseId == widget.courseId) enrollmentStatus = e.status;
+      }
+    } catch (_) {}
+    final enrollmentOpen = enrollmentStatus?.isOpen ?? true;
+    final badgeColor = enrollmentOpen ? AppTheme.goldPrimary : AppTheme.accentRuby;
 
     Lesson? nextIncompleteLesson;
     for (final l in lessons) {
@@ -90,15 +102,17 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppTheme.goldPrimary.withValues(alpha: 0.15),
+                          color: badgeColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: AppTheme.goldPrimary.withValues(alpha: 0.4)),
+                              color: badgeColor.withValues(alpha: 0.4)),
                         ),
-                        child: const Text(
-                          'You are enrolled in this course',
+                        child: Text(
+                          enrollmentOpen
+                              ? 'You are enrolled in this course'
+                              : 'Enrollment ${enrollmentStatus!.label.toLowerCase()} — contact your teacher',
                           style: TextStyle(
-                            color: AppTheme.goldPrimary,
+                            color: badgeColor,
                             fontWeight: FontWeight.w800,
                             fontSize: 10,
                             letterSpacing: 0.8,

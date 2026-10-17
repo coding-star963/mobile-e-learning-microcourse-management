@@ -248,18 +248,21 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDone = status == EnrollmentStatus.completed;
+    final color = switch (status) {
+      EnrollmentStatus.completed => AppTheme.accentEmerald,
+      EnrollmentStatus.active => AppTheme.goldPrimary,
+      _ => AppTheme.accentRuby,
+    };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: (isDone ? AppTheme.accentEmerald : AppTheme.goldPrimary)
-            .withValues(alpha: 0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        isDone ? 'Completed' : 'In progress',
+        status.label,
         style: TextStyle(
-          color: isDone ? AppTheme.accentEmerald : AppTheme.goldLight,
+          color: status == EnrollmentStatus.active ? AppTheme.goldLight : color,
           fontSize: 9,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.6,

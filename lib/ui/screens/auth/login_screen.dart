@@ -263,6 +263,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
+
+                    // Student self-registration (Gmail only)
+                    TextButton(
+                      onPressed: auth.isLoading
+                          ? null
+                          : () => Navigator.of(context).pushNamed('/register'),
+                      child: const Text(
+                        "New student? Create an account",
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

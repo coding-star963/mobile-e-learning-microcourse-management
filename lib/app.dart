@@ -6,6 +6,7 @@ import 'providers/auth_provider.dart';
 import 'ui/screens/auth/forgot_password_screen.dart';
 import 'ui/screens/auth/login_screen.dart';
 import 'ui/screens/auth/profile_screen.dart';
+import 'ui/screens/auth/register_screen.dart';
 import 'ui/screens/course/course_detail_screen.dart';
 import 'ui/screens/course/course_list_screen.dart';
 import 'ui/screens/dashboard/home_shell.dart';
@@ -32,6 +33,7 @@ class MicroLearnApp extends StatelessWidget {
         '/': (_) => const AuthGate(),
         '/login': (_) => const LoginScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
+        '/register': (_) => const RegisterScreen(),
         '/home': (_) => const HomeShell(),
         '/courses': (_) => const CourseListScreen(),
         '/profile': (_) => const ProfileScreen(),

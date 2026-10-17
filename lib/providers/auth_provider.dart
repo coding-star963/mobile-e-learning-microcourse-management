@@ -58,6 +58,32 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// 1.1 Registration — creates a student account and enters the app.
+  Future<bool> register({
+    required String fullName,
+    required String email,
+    required String password,
+  }) async {
+    _setBusy(AuthStatus.submitting);
+    try {
+      user = await _authRepository.register(
+        fullName: fullName,
+        email: email,
+        password: password,
+      );
+      status = AuthStatus.authenticated;
+      error = null;
+      notifyListeners();
+      return true;
+    } on AuthException catch (e) {
+      _fail(e.message);
+      return false;
+    } catch (e) {
+      _fail(e.toString());
+      return false;
+    }
+  }
+
   /// 1.2 Logout — ends the session and returns to the login screen.
   Future<void> logout() async {
     _setBusy(AuthStatus.submitting);

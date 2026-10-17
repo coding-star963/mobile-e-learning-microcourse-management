@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme.dart';
+import '../../../core/validators.dart';
 import '../../../data/api/api_client.dart';
 import '../../../providers/auth_provider.dart';
 import '../../widgets/server_config_dialog.dart';
@@ -275,9 +276,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         prefixIcon: Icon(Icons.mail_outline,
                             color: AppTheme.goldPrimary),
                       ),
-                      validator: (v) => (v == null || !v.contains('@'))
-                          ? 'Enter a valid email.'
-                          : null,
+                      validator: (v) {
+                        final email = v?.trim() ?? '';
+                        if (!email.contains('@')) return 'Enter a valid email.';
+                        // Older non-Gmail emails may stay; a new one must be Gmail.
+                        final changed = email.toLowerCase() !=
+                            (auth.user?.email ?? '').toLowerCase();
+                        if (changed && !Validators.isGmail(email)) {
+                          return Validators.gmailError;
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 18),
                     FilledButton(

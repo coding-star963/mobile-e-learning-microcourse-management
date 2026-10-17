@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_e_learning_micro_course_system/app.dart';
 import 'package:mobile_e_learning_micro_course_system/core/constants.dart';
+import 'package:mobile_e_learning_micro_course_system/core/validators.dart';
 import 'package:mobile_e_learning_micro_course_system/data/mock/mock_auth_repository.dart';
 import 'package:mobile_e_learning_micro_course_system/data/mock/mock_course_repository.dart';
 import 'package:mobile_e_learning_micro_course_system/data/mock/mock_enrollment_repository.dart';
@@ -126,6 +127,40 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(TextFormField), findsNWidgets(2)); // back to login
+    });
+  });
+
+  group('1.1 Registration', () {
+    Future<void> fillRegistration(WidgetTester tester, String email) async {
+      await tester.tap(find.text('New student? Create an account'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), 'Juan Dela Cruz');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Gmail address'), email);
+      await tester.enterText(find.widgetWithText(TextFormField, 'Password'), 'password123');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Confirm password'), 'password123');
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Create account'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Create account'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('rejects an email that is not @gmail.com', (tester) async {
+      await tester.pumpWidget(appUnderTest());
+      await tester.pumpAndSettle();
+
+      await fillRegistration(tester, 'juan@yahoo.com');
+
+      expect(find.text(Validators.gmailError), findsOneWidget);
+      expect(find.text('Join as a student'), findsOneWidget); // still on sign-up
+    });
+
+    testWidgets('creates a student account with Gmail and opens the app',
+        (tester) async {
+      await tester.pumpWidget(appUnderTest());
+      await tester.pumpAndSettle();
+
+      await fillRegistration(tester, 'juan.delacruz@gmail.com');
+
+      expect(find.text('Hi, Juan!'), findsOneWidget);
     });
   });
 

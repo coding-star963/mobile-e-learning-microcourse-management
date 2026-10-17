@@ -19,11 +19,11 @@ class Enrollment {
       parsedEnrolledAt = DateTime.now();
     }
 
-    EnrollmentStatus parsedStatus = EnrollmentStatus.active;
     final rawStatus = json['status']?.toString().toLowerCase();
-    if (rawStatus == 'completed') {
-      parsedStatus = EnrollmentStatus.completed;
-    }
+    final parsedStatus = EnrollmentStatus.values.firstWhere(
+      (s) => s.name == rawStatus,
+      orElse: () => EnrollmentStatus.active,
+    );
 
     return Enrollment(
       id: json['id']?.toString() ?? '',
@@ -99,4 +99,18 @@ class Enrollment {
 }
 
 /// Enrollment status shown in 3.2/3.3 and driven by Module 5 completion.
-enum EnrollmentStatus { active, completed }
+/// Teachers can also suspend or cancel an enrollment on the web portal.
+enum EnrollmentStatus {
+  active('In progress'),
+  completed('Completed'),
+  suspended('Suspended'),
+  cancelled('Cancelled');
+
+  const EnrollmentStatus(this.label);
+
+  final String label;
+
+  /// False when the teacher suspended or cancelled the enrollment; the server
+  /// then no longer records lesson progress for it.
+  bool get isOpen => this == active || this == completed;
+}
