@@ -51,7 +51,7 @@ class _CatalogViewState extends State<CatalogView> {
             children: [
               Text(
                 'Welcome, ${user?.fullName.split(' ').first ?? 'Scholar'}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
@@ -59,7 +59,7 @@ class _CatalogViewState extends State<CatalogView> {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Explore elite micro-courses & executive masterclasses',
                 style: TextStyle(
                   color: AppTheme.goldLight,
@@ -77,7 +77,7 @@ class _CatalogViewState extends State<CatalogView> {
           child: TextField(
             controller: _searchController,
             textInputAction: TextInputAction.search,
-            style: const TextStyle(color: AppTheme.textPrimary),
+            style: TextStyle(color: AppTheme.textPrimary),
             onSubmitted: (query) =>
                 context.read<CourseProvider>().search(query),
             decoration: InputDecoration(
@@ -87,7 +87,7 @@ class _CatalogViewState extends State<CatalogView> {
               suffixIcon: courseProvider.searchQuery.isEmpty
                   ? null
                   : IconButton(
-                      icon: const Icon(Icons.close, color: AppTheme.textMuted),
+                      icon: Icon(Icons.close, color: AppTheme.textMuted),
                       tooltip: 'Clear search',
                       onPressed: () {
                         _searchController.clear();
@@ -135,7 +135,7 @@ class _CatalogViewState extends State<CatalogView> {
               selectedCategory!.description!,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 12, height: 1.4),
+              style: TextStyle(color: AppTheme.textMuted, fontSize: 12, height: 1.4),
             ),
           ),
 
@@ -199,7 +199,7 @@ class _CatalogViewState extends State<CatalogView> {
               Text(
                 provider.error!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 20),
               FilledButton(
@@ -219,21 +219,21 @@ class _CatalogViewState extends State<CatalogView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.school_outlined,
+              Icon(Icons.school_outlined,
                   size: 52, color: AppTheme.goldLight),
               const SizedBox(height: 16),
               Text(
                 provider.searchQuery.isNotEmpty
                     ? 'No courses match your search.'
                     : 'No courses found',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Try selecting another category or clear your search query.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppTheme.textMuted, fontSize: 13),

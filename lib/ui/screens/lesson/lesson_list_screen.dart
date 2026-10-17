@@ -69,7 +69,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                       const SizedBox(width: 8),
                       Text(
                         'COURSE MODULES ($totalCount)',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.goldLight,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
@@ -85,7 +85,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                     Container(
                       padding: const EdgeInsets.all(32),
                       decoration: AppTheme.luxuryCardDecoration,
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'No lessons available yet for this course.',
                           style: TextStyle(color: AppTheme.textMuted),
@@ -138,7 +138,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
               const Spacer(),
               Text(
                 '${(progress * 100).toInt()}% COMPLETED',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.goldLight,
                   fontWeight: FontWeight.w800,
                   fontSize: 12,
@@ -150,7 +150,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
           const SizedBox(height: 12),
           Text(
             course?.title ?? 'Micro-Course Workspace',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppTheme.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -173,9 +173,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
             children: [
               Text(
                 '$completedCount of $totalCount completed',
-                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
               ),
-              const Text(
+              Text(
                 'Self-Paced Masterclass',
                 style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
               ),
@@ -266,7 +266,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
             children: [
               Text(
                 lesson.displayDuration,
-                style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
               ),
               if (lesson.isFreePreview) ...[
                 const SizedBox(width: 8),
@@ -293,7 +293,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                 const SizedBox(width: 2),
                 Text(
                   '${lesson.resources.length}',
-                  style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                  style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
                 ),
               ],
             ],

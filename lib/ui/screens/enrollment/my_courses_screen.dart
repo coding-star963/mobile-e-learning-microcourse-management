@@ -183,7 +183,7 @@ class _EnrollmentCard extends StatelessWidget {
                               const Spacer(),
                               Text(
                                 '${(fraction * 100).toInt()}% Done',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppTheme.goldLight,
                                   fontWeight: FontWeight.w700,
                                   fontSize: 12,
@@ -194,7 +194,7 @@ class _EnrollmentCard extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             course?.title ?? 'Enrolled Course',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -205,7 +205,7 @@ class _EnrollmentCard extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             'Enrolled ${_formatDate(enrollment.enrolledAt)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.textMuted,
                               fontSize: 11,
                             ),
@@ -295,7 +295,7 @@ class _EmptyState extends StatelessWidget {
                   size: 38, color: AppTheme.goldPrimary),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'No active enrollments',
               style: TextStyle(
                 color: AppTheme.textPrimary,
@@ -304,7 +304,7 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Discover executive micro-courses in the catalog and begin your journey.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppTheme.textMuted, fontSize: 14),

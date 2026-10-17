@@ -7,6 +7,7 @@ import '../../../core/validators.dart';
 import '../../../data/api/api_client.dart';
 import '../../../providers/auth_provider.dart';
 import '../../widgets/server_config_dialog.dart';
+import '../../widgets/theme_toggle_button.dart';
 
 /// 1.4 Luxury Profile Management Screen.
 /// Displays student identity, profile photo, credentials management,
@@ -190,7 +191,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Text(
                     user?.fullName ?? 'Student Member',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
@@ -199,7 +200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 4),
                   Text(
                     user?.email ?? '',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.goldLight,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -239,7 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(Icons.badge_outlined,
                             color: AppTheme.goldPrimary, size: 20),
@@ -257,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _nameController,
-                      style: const TextStyle(color: AppTheme.textPrimary),
+                      style: TextStyle(color: AppTheme.textPrimary),
                       decoration: const InputDecoration(
                         labelText: 'Full name',
                         prefixIcon: Icon(Icons.person_outline,
@@ -271,7 +272,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(color: AppTheme.textPrimary),
+                      style: TextStyle(color: AppTheme.textPrimary),
                       decoration: const InputDecoration(
                         labelText: 'Gmail address',
                         hintText: 'name@gmail.com',
@@ -303,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(Icons.shield_outlined,
                           color: AppTheme.goldPrimary, size: 20),
@@ -322,7 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   TextFormField(
                     controller: _currentPasswordController,
                     obscureText: _obscureCurrent,
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: AppTheme.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Current password',
                       prefixIcon: const Icon(Icons.lock_outline,
@@ -343,7 +344,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   TextFormField(
                     controller: _newPasswordController,
                     obscureText: _obscureNew,
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: AppTheme.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'New password',
                       prefixIcon: const Icon(Icons.vpn_key_outlined,
@@ -364,7 +365,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   TextFormField(
                     controller: _confirmPasswordController,
                     obscureText: _obscureNew,
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: AppTheme.textPrimary),
                     decoration: const InputDecoration(
                       labelText: 'Confirm new password',
                       prefixIcon: Icon(Icons.lock_reset,
@@ -384,6 +385,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 20),
 
+            // -- Appearance (light / dark mode) -----------------------------
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: AppTheme.luxuryCardDecoration,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.contrast_rounded, color: AppTheme.goldPrimary, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Appearance',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Choose light or dark mode, or follow your phone\'s setting.',
+                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                  ),
+                  const SizedBox(height: 14),
+                  const SizedBox(width: double.infinity, child: ThemeModeSelector()),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
             // -- Server Connection Card -------------------------------------
             Container(
               padding: const EdgeInsets.all(20),
@@ -391,7 +425,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(Icons.wifi_tethering,
                           color: AppTheme.goldPrimary, size: 20),
@@ -409,7 +443,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Active API: $_currentServerUrl',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(height: 14),

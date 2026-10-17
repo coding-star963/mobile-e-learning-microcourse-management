@@ -187,7 +187,7 @@ class _EnrollmentContentView extends StatelessWidget {
                   Expanded(
                     child: Text(
                       course?.title ?? enrollment.courseId,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
@@ -200,7 +200,7 @@ class _EnrollmentContentView extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 '$categoryName • ${course?.difficultyLevel.toUpperCase() ?? ""}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.goldLight,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -236,7 +236,7 @@ class _EnrollmentContentView extends StatelessWidget {
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: AppTheme.borderLight),
+            side: BorderSide(color: AppTheme.borderLight),
           ),
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -248,7 +248,7 @@ class _EnrollmentContentView extends StatelessWidget {
                     const Icon(Icons.insights,
                         size: 18, color: AppTheme.goldPrimary),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'Course progress',
                       style: TextStyle(
                         color: AppTheme.textPrimary,
@@ -259,7 +259,7 @@ class _EnrollmentContentView extends StatelessWidget {
                     const Spacer(),
                     Text(
                       '${(fraction * 100).round()}%',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.goldLight,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
@@ -359,12 +359,12 @@ class _InfoRow extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             label,
-            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
           ),
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppTheme.textPrimary,
               fontWeight: FontWeight.w700,
               fontSize: 13,

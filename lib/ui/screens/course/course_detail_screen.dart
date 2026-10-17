@@ -141,7 +141,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                 ok
                     ? 'Enrolled in ${_course!.title}!'
                     : (enrollmentProvider.error ?? 'Could not enroll.'),
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.textPrimary),
               ),
             ),
           ],
@@ -261,7 +261,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
                               Text(
                                 course.title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppTheme.textPrimary,
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
@@ -272,7 +272,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
                               Text(
                                 '${courseProvider.categoryNameOf(course.categoryId)} • ${course.difficultyLevel}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppTheme.goldLight,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -287,7 +287,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Row(
+                                    Row(
                                       children: [
                                         Icon(Icons.info_outline,
                                             color: AppTheme.goldPrimary,
@@ -306,7 +306,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                     const SizedBox(height: 12),
                                     Text(
                                       course.description,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: AppTheme.textSecondary,
                                         fontSize: 14,
                                         height: 1.5,
@@ -324,7 +324,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Row(
+                                    Row(
                                       children: [
                                         Icon(Icons.auto_awesome_outlined,
                                             color: AppTheme.goldPrimary,
@@ -368,7 +368,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                             Expanded(
                                               child: Text(
                                                 obj,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   color: AppTheme.textPrimary,
                                                   fontSize: 13,
                                                   height: 1.4,
@@ -396,7 +396,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                             color: AppTheme.goldPrimary,
                                             size: 18),
                                         const SizedBox(width: 8),
-                                        const Text(
+                                        Text(
                                           'Curriculum Modules',
                                           style: TextStyle(
                                             color: AppTheme.textPrimary,
@@ -407,7 +407,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                         const Spacer(),
                                         Text(
                                           '${course.lessonIds.length} lesson(s) in this course.',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: AppTheme.textMuted,
                                             fontSize: 13,
                                           ),
@@ -416,7 +416,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                     ),
                                     const SizedBox(height: 14),
                                     if (lessons.isEmpty)
-                                      const Text(
+                                      Text(
                                         'Modules are being scheduled by the instructor.',
                                         style: TextStyle(
                                             color: AppTheme.textMuted,
@@ -437,7 +437,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                                 Expanded(
                                                   child: Text(
                                                     l.title,
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       color: AppTheme.textSecondary,
                                                       fontSize: 13,
                                                     ),
@@ -448,7 +448,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                                 ),
                                                 Text(
                                                   l.displayDuration,
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     color: AppTheme.textMuted,
                                                     fontSize: 11,
                                                   ),
@@ -461,7 +461,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                         padding: const EdgeInsets.only(top: 8),
                                         child: Text(
                                           '+ ${lessons.length - 3} more modules in curriculum',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: AppTheme.goldLight,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -491,7 +491,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               ),
               decoration: BoxDecoration(
                 color: AppTheme.bgCard,
-                border: const Border(
+                border: Border(
                   top: BorderSide(color: AppTheme.borderLight),
                 ),
                 boxShadow: [
@@ -616,7 +616,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             bottom: 20,
             child: Text(
               course.title,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -643,7 +643,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 20),
             FilledButton(
@@ -681,7 +681,7 @@ class _ClosedEnrollmentNotice extends StatelessWidget {
             child: Text(
               'Your enrollment is ${status.label.toLowerCase()}. '
               'Lessons are closed until your teacher reactivates it.',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontWeight: FontWeight.w600,
               ),

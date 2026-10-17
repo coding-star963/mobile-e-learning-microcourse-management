@@ -127,7 +127,7 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                       const Spacer(),
                       Text(
                         '${(progress * 100).toInt()}% Done',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.goldLight,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
@@ -138,7 +138,7 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                   const SizedBox(height: 16),
                   Text(
                     course?.title ?? 'Course Workspace',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
@@ -147,7 +147,7 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                   const SizedBox(height: 6),
                   Text(
                     course?.description ?? 'Explore modules and master the skills.',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 13,
                       height: 1.4,
@@ -170,7 +170,7 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                   const SizedBox(height: 8),
                   Text(
                     '$completedCount of $totalLessons modules completed',
-                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                    style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                   ),
                   const SizedBox(height: 20),
 
@@ -210,7 +210,7 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                 const Icon(Icons.auto_stories,
                     size: 20, color: AppTheme.goldPrimary),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Course Curriculum',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
@@ -246,7 +246,7 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppTheme.borderLight),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     'No lessons currently available.',
                     style: TextStyle(color: AppTheme.textMuted),
@@ -321,7 +321,7 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                     ),
                     subtitle: Text(
                       '${lesson.displayDuration} • ${lesson.resources.length} resources',
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppTheme.textMuted, fontSize: 12),
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios,

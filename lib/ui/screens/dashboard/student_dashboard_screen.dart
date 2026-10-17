@@ -39,10 +39,10 @@ class StudentDashboardScreen extends StatelessWidget {
         children: [
           Text(
             'Hi, ${user?.fullName.split(' ').first ?? 'there'}!',
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 24, fontWeight: FontWeight.w800),
+            style: TextStyle(color: AppTheme.textPrimary, fontSize: 24, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
-          const Text('Here is your learning at a glance.', style: TextStyle(color: AppTheme.textSecondary)),
+          Text('Here is your learning at a glance.', style: TextStyle(color: AppTheme.textSecondary)),
           const SizedBox(height: 16),
           if (data == null && provider.isLoading)
             const Padding(
@@ -54,10 +54,10 @@ class StudentDashboardScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 48),
               child: Column(
                 children: [
-                  const Icon(Icons.cloud_off_rounded, size: 48, color: AppTheme.textMuted),
+                  Icon(Icons.cloud_off_rounded, size: 48, color: AppTheme.textMuted),
                   const SizedBox(height: 12),
                   Text(provider.error ?? 'Pull down to load your dashboard.',
-                      textAlign: TextAlign.center, style: const TextStyle(color: AppTheme.textMuted)),
+                      textAlign: TextAlign.center, style: TextStyle(color: AppTheme.textMuted)),
                   TextButton(onPressed: refresh, child: const Text('Retry')),
                 ],
               ),
@@ -77,7 +77,7 @@ class StudentDashboardScreen extends StatelessWidget {
             // 7.2 My Courses Summary
             const _SectionTitle('My courses'),
             if (data.courses.isEmpty)
-              const Text('You have not enrolled in a course yet. Browse the Courses tab to get started.',
+              Text('You have not enrolled in a course yet. Browse the Courses tab to get started.',
                   style: TextStyle(color: AppTheme.textMuted))
             else
               ...data.courses.map((c) => _CourseProgressTile(course: c, onTap: () => openCourse(c.courseId))),
@@ -92,7 +92,7 @@ class StudentDashboardScreen extends StatelessWidget {
               ],
             ),
             if (data.recentAnnouncements.isEmpty)
-              const Text('No announcements yet.', style: TextStyle(color: AppTheme.textMuted))
+              Text('No announcements yet.', style: TextStyle(color: AppTheme.textMuted))
             else
               ...data.recentAnnouncements.take(3).map((a) => AnnouncementTile(announcement: a)),
             const SizedBox(height: 20),
@@ -110,15 +110,15 @@ class StudentDashboardScreen extends StatelessWidget {
               ],
             ),
             if (data.recentActivity.isEmpty)
-              const Text('Complete a lesson to see it here.', style: TextStyle(color: AppTheme.textMuted))
+              Text('Complete a lesson to see it here.', style: TextStyle(color: AppTheme.textMuted))
             else
               ...data.recentActivity.map((a) => ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.check_circle, color: AppTheme.accentEmerald),
-                    title: Text(a.lessonTitle, style: const TextStyle(color: AppTheme.textPrimary)),
+                    title: Text(a.lessonTitle, style: TextStyle(color: AppTheme.textPrimary)),
                     subtitle: Text(
                       '${a.courseTitle}${a.completedAt != null ? ' • ${formatShortDate(a.completedAt!)}' : ''}',
-                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                      style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                     ),
                   )),
           ],
@@ -137,7 +137,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Text(text,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
+            style: TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
       );
 }
 
@@ -176,11 +176,11 @@ class _SummaryGrid extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(value,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppTheme.textPrimary, fontSize: 20, fontWeight: FontWeight.w800)),
                       Text(label,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                          style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -261,7 +261,7 @@ class _CourseProgressTile extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         title: Text(course.title,
-            style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+            style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 8),
           child: ProgressBar(

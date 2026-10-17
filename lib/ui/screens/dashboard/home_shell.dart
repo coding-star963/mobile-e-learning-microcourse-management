@@ -12,6 +12,7 @@ import '../../../providers/dashboard_provider.dart';
 import '../../../providers/enrollment_provider.dart';
 import '../../../providers/lesson_provider.dart';
 import '../../screens/course/catalog_view.dart';
+import '../../widgets/theme_toggle_button.dart';
 import '../../screens/enrollment/my_courses_screen.dart';
 import '../notifications/announcements_screen.dart';
 import '../notifications/notifications_screen.dart';
@@ -104,7 +105,7 @@ class _HomeShellState extends State<HomeShell> with AutoRefresh {
           fresh.length == 1
               ? '${fresh.first.title}: ${fresh.first.content}'
               : 'You have ${fresh.length} new enrollment updates.',
-          style: const TextStyle(color: AppTheme.textPrimary),
+          style: TextStyle(color: AppTheme.textPrimary),
         ),
         action: SnackBarAction(
           label: 'View',
@@ -164,7 +165,7 @@ class _HomeShellState extends State<HomeShell> with AutoRefresh {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               'MicroLearn',
               style: TextStyle(
                 color: AppTheme.textPrimary,
@@ -195,6 +196,7 @@ class _HomeShellState extends State<HomeShell> with AutoRefresh {
               MaterialPageRoute(builder: (_) => const NotificationsScreen()),
             ),
           ),
+          const ThemeToggleButton(),
           IconButton(
             icon: const Icon(Icons.person_outline_rounded,
                 color: AppTheme.goldPrimary),
@@ -202,7 +204,7 @@ class _HomeShellState extends State<HomeShell> with AutoRefresh {
             onPressed: () => Navigator.of(context).pushNamed('/profile'),
           ),
           IconButton(
-            icon: const Icon(Icons.logout_rounded, color: AppTheme.textMuted),
+            icon: Icon(Icons.logout_rounded, color: AppTheme.textMuted),
             tooltip: 'Log out',
             onPressed: auth.isLoading ? null : () => _confirmLogout(context),
           ),
@@ -220,7 +222,7 @@ class _HomeShellState extends State<HomeShell> with AutoRefresh {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF0E131F),
+          color: AppTheme.navBar,
           border: Border(
             top: BorderSide(
               color: AppTheme.borderGold.withValues(alpha: 0.2),
@@ -279,9 +281,9 @@ class _HomeShellState extends State<HomeShell> with AutoRefresh {
           borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: AppTheme.borderGold),
         ),
-        title: const Text('End Session',
+        title: Text('End Session',
             style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
-        content: const Text(
+        content: Text(
           'Are you sure you want to sign out from your executive account?',
           style: TextStyle(color: AppTheme.textSecondary),
         ),

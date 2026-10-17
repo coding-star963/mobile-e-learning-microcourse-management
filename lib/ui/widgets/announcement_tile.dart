@@ -68,7 +68,7 @@ class AnnouncementTile extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               '${a.typeLabel} • ${a.courseTitle ?? (a.isEnrollmentNotice ? 'Your account' : 'All courses')}${a.publishedAt != null ? ' • ${formatShortDate(a.publishedAt!)}' : ''}',
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+              style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
             ),
           ),
           trailing: isNew
@@ -116,7 +116,7 @@ Future<void> showAnnouncementSheet(BuildContext context, Announcement a) {
             const SizedBox(height: 8),
             Text(
               a.title,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
@@ -129,12 +129,12 @@ Future<void> showAnnouncementSheet(BuildContext context, Announcement a) {
                 if (a.authorName != null) a.authorName!,
                 if (a.publishedAt != null) formatShortDate(a.publishedAt!),
               ].join(' • '),
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+              style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 18),
             Text(
               a.content,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textSecondary,
                 fontSize: 15,
                 height: 1.5,

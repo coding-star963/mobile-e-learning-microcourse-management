@@ -31,7 +31,7 @@ class AnnouncementsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          const Text('Announcements',
+          Text('Announcements',
               style: TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.w800)),
           const SizedBox(height: 12),
           SingleChildScrollView(
@@ -82,7 +82,7 @@ class _Message extends StatelessWidget {
         children: [
           Icon(icon, size: 48, color: AppTheme.textMuted),
           const SizedBox(height: 12),
-          Text(text, textAlign: TextAlign.center, style: const TextStyle(color: AppTheme.textMuted)),
+          Text(text, textAlign: TextAlign.center, style: TextStyle(color: AppTheme.textMuted)),
         ],
       ),
     );

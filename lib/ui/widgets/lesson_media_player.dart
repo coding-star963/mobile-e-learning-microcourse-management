@@ -171,7 +171,7 @@ class _LessonMediaPlayerState extends State<LessonMediaPlayer> {
                       controller != null
                           ? '${_format(controller.value.position)} / ${_format(controller.value.duration)}'
                           : (widget.isAudio ? 'Audio lesson' : 'Video lesson'),
-                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
                     ),
                     const Spacer(),
                     Icon(widget.isAudio ? Icons.audiotrack : Icons.hd_outlined,
@@ -179,7 +179,7 @@ class _LessonMediaPlayerState extends State<LessonMediaPlayer> {
                     if (widget.durationLabel != null) ...[
                       const SizedBox(width: 8),
                       Text(widget.durationLabel!,
-                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
                     ],
                   ],
                 ),

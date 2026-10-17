@@ -59,7 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               const Icon(Icons.person_add_alt_1_rounded, size: 48, color: AppTheme.goldPrimary),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Join as a student',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -69,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Sign up with your Gmail address to start learning.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.4),
@@ -79,7 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _nameController,
                 textInputAction: TextInputAction.next,
                 textCapitalization: TextCapitalization.words,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.textPrimary),
                 decoration: const InputDecoration(
                   labelText: 'Full name',
                   prefixIcon: Icon(Icons.person_outline, color: AppTheme.goldPrimary),
@@ -91,7 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.textPrimary),
                 decoration: const InputDecoration(
                   labelText: 'Gmail address',
                   hintText: 'name@gmail.com',
@@ -104,7 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _passwordController,
                 obscureText: _obscure,
                 textInputAction: TextInputAction.next,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Password',
                   prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppTheme.goldPrimary),
@@ -121,7 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: _obscure,
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => _submit(),
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.textPrimary),
                 decoration: const InputDecoration(
                   labelText: 'Confirm password',
                   prefixIcon: Icon(Icons.lock_outline_rounded, color: AppTheme.goldPrimary),

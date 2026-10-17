@@ -44,21 +44,21 @@ class _LearningHistoryScreenState extends State<LearningHistoryScreen> {
           padding: const EdgeInsets.all(16),
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            const Text('Completed courses',
+            Text('Completed courses',
                 style: TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
             const SizedBox(height: 10),
             if (completedCourses.isEmpty)
-              const Text('No completed courses yet.', style: TextStyle(color: AppTheme.textMuted))
+              Text('No completed courses yet.', style: TextStyle(color: AppTheme.textMuted))
             else
               ...completedCourses.map((c) => ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.emoji_events_rounded, color: AppTheme.goldPrimary),
-                    title: Text(c.title, style: const TextStyle(color: AppTheme.textPrimary)),
+                    title: Text(c.title, style: TextStyle(color: AppTheme.textPrimary)),
                     subtitle: Text('${c.totalLessons} lessons completed',
-                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                        style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                   )),
             const SizedBox(height: 20),
-            const Text('Completed lessons',
+            Text('Completed lessons',
                 style: TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
             const SizedBox(height: 10),
             if (progress.isLoading && progress.history.isEmpty)
@@ -66,15 +66,15 @@ class _LearningHistoryScreenState extends State<LearningHistoryScreen> {
             else if (progress.error != null)
               Text(progress.error!, style: const TextStyle(color: AppTheme.accentRuby))
             else if (progress.history.isEmpty)
-              const Text('No completed lessons yet.', style: TextStyle(color: AppTheme.textMuted))
+              Text('No completed lessons yet.', style: TextStyle(color: AppTheme.textMuted))
             else
               ...progress.history.map((a) => ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.check_circle, color: AppTheme.accentEmerald),
-                    title: Text(a.lessonTitle, style: const TextStyle(color: AppTheme.textPrimary)),
+                    title: Text(a.lessonTitle, style: TextStyle(color: AppTheme.textPrimary)),
                     subtitle: Text(
                       '${a.courseTitle}${a.completedAt != null ? ' • ${formatShortDate(a.completedAt!)}' : ''}',
-                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                      style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                     ),
                   )),
           ],

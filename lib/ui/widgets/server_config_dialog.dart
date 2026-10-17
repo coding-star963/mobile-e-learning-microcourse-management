@@ -30,14 +30,14 @@ Future<String?> showServerConfigDialog(BuildContext context) async {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Specify host machine IP for mobile testing on same Wi-Fi:',
             style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 14),
           TextField(
             controller: controller,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+            style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
             decoration: const InputDecoration(
               hintText: 'http://192.168.8.62:8000/api',
               labelText: 'API Base URL',

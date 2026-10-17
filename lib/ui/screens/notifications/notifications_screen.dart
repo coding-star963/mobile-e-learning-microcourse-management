@@ -41,7 +41,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Notifications')),
       body: provider.announcements.isEmpty
-          ? const Center(
+          ? Center(
               child: Text('No notifications yet.', style: TextStyle(color: AppTheme.textMuted)),
             )
           : ListView(
@@ -49,7 +49,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               children: [
                 _Header('New (${fresh.length})'),
                 if (fresh.isEmpty)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(bottom: 16),
                     child: Text("You're all caught up.", style: TextStyle(color: AppTheme.textMuted)),
                   ),

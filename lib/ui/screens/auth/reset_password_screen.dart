@@ -62,7 +62,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             children: [
               const Icon(Icons.lock_reset_rounded, size: 48, color: AppTheme.goldPrimary),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Set a new password',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -75,13 +75,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               Text(
                 'Choose a new password for ${widget.email}.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.4),
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.4),
               ),
               const SizedBox(height: 28),
               TextFormField(
                 controller: _passwordController,
                 obscureText: _obscure,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'New password',
                   prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppTheme.goldPrimary),
@@ -96,7 +96,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               TextFormField(
                 controller: _confirmController,
                 obscureText: _obscure,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.textPrimary),
                 decoration: const InputDecoration(
                   labelText: 'Confirm new password',
                   prefixIcon: Icon(Icons.lock_outline_rounded, color: AppTheme.goldPrimary),

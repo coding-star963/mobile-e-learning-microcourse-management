@@ -23,6 +23,7 @@ import 'providers/dashboard_provider.dart';
 import 'providers/enrollment_provider.dart';
 import 'providers/lesson_provider.dart';
 import 'providers/progress_provider.dart';
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +77,8 @@ void main() async {
             repo: context.read<ProgressRepository>(),
           ),
         ),
+        // Light / dark mode, remembered on this device.
+        ChangeNotifierProvider(create: (_) => ThemeProvider()..load()),
       ],
       child: const MicroLearnApp(),
     ),

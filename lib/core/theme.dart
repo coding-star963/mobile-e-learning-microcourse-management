@@ -6,25 +6,32 @@ import 'package:flutter/material.dart';
 class AppTheme {
   const AppTheme._();
 
-  // Luxury Metallic & Noir Palette
+  // Luxury Metallic & Noir Palette — gold and accents are the same in both modes.
   static const Color goldPrimary = Color(0xFFD4AF37); // Champagne / 24K Gold
-  static const Color goldLight = Color(0xFFF3D282);
   static const Color goldDark = Color(0xFFA88421);
   static const Color goldGlow = Color(0x33D4AF37);
-
-  static const Color bgDark = Color(0xFF090D16); // Obsidian Midnight
-  static const Color bgCard = Color(0xFF121826); // Deep Slate Caviar
-  static const Color bgSurface = Color(0xFF1B2438);
-  static const Color borderLight = Color(0xFF28344D);
   static const Color borderGold = Color(0x40D4AF37);
 
   static const Color accentEmerald = Color(0xFF10B981);
   static const Color accentSapphire = Color(0xFF38BDF8);
   static const Color accentRuby = Color(0xFFF43F5E);
 
-  static const Color textPrimary = Color(0xFFF8FAFC);
-  static const Color textSecondary = Color(0xFF94A3B8);
-  static const Color textMuted = Color(0xFF64748B);
+  /// Brightness the neutral colors below follow. Set by the app from the
+  /// active theme (see [ThemeProvider]); dark is the original look.
+  static Brightness brightness = Brightness.dark;
+  static bool get isDark => brightness == Brightness.dark;
+  static _Palette get _p => isDark ? _Palette.dark : _Palette.light;
+
+  // Neutral colors: they switch between dark and light mode.
+  static Color get goldLight => _p.goldLight;
+  static Color get bgDark => _p.background;
+  static Color get bgCard => _p.card;
+  static Color get bgSurface => _p.surface;
+  static Color get borderLight => _p.border;
+  static Color get navBar => _p.navBar;
+  static Color get textPrimary => _p.textPrimary;
+  static Color get textSecondary => _p.textSecondary;
+  static Color get textMuted => _p.textMuted;
 
   // Luxury Gradients
   static const LinearGradient goldGradient = LinearGradient(
@@ -33,38 +40,50 @@ class AppTheme {
     colors: [Color(0xFFF7DE98), Color(0xFFD4AF37), Color(0xFFAA801E)],
   );
 
-  static const LinearGradient darkCardGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF161F33), Color(0xFF0E1422)],
-  );
+  static LinearGradient get darkCardGradient => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: _p.cardGradient,
+      );
 
-  static const LinearGradient heroGradient = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [Color(0xFF1C2740), Color(0xFF090D16)],
-  );
+  static LinearGradient get heroGradient => LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: _p.heroGradient,
+      );
 
   static BoxDecoration get luxuryCardDecoration => BoxDecoration(
         gradient: darkCardGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderGold.withValues(alpha: 0.25), width: 1),
+        border: Border.all(color: borderGold.withValues(alpha: isDark ? 0.25 : 0.45), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.45),
+            color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
         ],
       );
 
-  static ThemeData get light => dark; // Default directly to Luxury Dark for full premium feel
+  static ThemeData get light => _build(_Palette.light, Brightness.light);
 
-  static ThemeData get dark => ThemeData(
+  static ThemeData get dark => _build(_Palette.dark, Brightness.dark);
+
+  static ThemeData _build(_Palette p, Brightness mode) {
+    final bgDark = p.background;
+    final bgCard = p.card;
+    final bgSurface = p.surface;
+    final borderLight = p.border;
+    final goldLight = p.goldLight;
+    final textPrimary = p.textPrimary;
+    final textSecondary = p.textSecondary;
+    final textMuted = p.textMuted;
+    final scheme = mode == Brightness.dark ? ColorScheme.dark : ColorScheme.light;
+    return ThemeData(
         useMaterial3: true,
-        brightness: Brightness.dark,
+        brightness: mode,
         scaffoldBackgroundColor: bgDark,
-        colorScheme: ColorScheme.dark(
+        colorScheme: scheme(
           primary: goldPrimary,
           onPrimary: Colors.black,
           primaryContainer: goldDark,
@@ -75,7 +94,7 @@ class AppTheme {
           error: accentRuby,
           outline: textMuted,
         ),
-        appBarTheme: const AppBarTheme(
+        appBarTheme: AppBarTheme(
           centerTitle: false,
           elevation: 0,
           backgroundColor: bgDark,
@@ -94,14 +113,14 @@ class AppTheme {
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: borderLight, width: 1),
+            side: BorderSide(color: borderLight, width: 1),
           ),
           clipBehavior: Clip.antiAlias,
           margin: const EdgeInsets.only(bottom: 14),
         ),
         chipTheme: ChipThemeData(
           backgroundColor: bgSurface,
-          labelStyle: const TextStyle(
+          labelStyle: TextStyle(
             color: textPrimary,
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -115,11 +134,11 @@ class AppTheme {
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: borderLight),
+            borderSide: BorderSide(color: borderLight),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: borderLight),
+            borderSide: BorderSide(color: borderLight),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -134,8 +153,8 @@ class AppTheme {
           isDense: true,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          labelStyle: const TextStyle(color: textSecondary),
-          hintStyle: const TextStyle(color: textMuted),
+          labelStyle: TextStyle(color: textSecondary),
+          hintStyle: TextStyle(color: textMuted),
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
@@ -171,7 +190,7 @@ class AppTheme {
         navigationBarTheme: NavigationBarThemeData(
           height: 72,
           elevation: 0,
-          backgroundColor: Color(0xFF0E131F),
+          backgroundColor: p.navBar,
           indicatorColor: goldPrimary.withValues(alpha: 0.18),
           indicatorShape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -184,7 +203,7 @@ class AppTheme {
                 fontWeight: FontWeight.w700,
               );
             }
-            return const TextStyle(
+            return TextStyle(
               color: textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -194,23 +213,24 @@ class AppTheme {
             if (states.contains(WidgetState.selected)) {
               return const IconThemeData(color: goldPrimary, size: 24);
             }
-            return const IconThemeData(color: textMuted, size: 22);
+            return IconThemeData(color: textMuted, size: 22);
           }),
         ),
         snackBarTheme: SnackBarThemeData(
           behavior: SnackBarBehavior.floating,
           backgroundColor: bgSurface,
-          contentTextStyle: const TextStyle(color: textPrimary),
+          contentTextStyle: TextStyle(color: textPrimary),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            side: const BorderSide(color: borderLight),
+            side: BorderSide(color: borderLight),
           ),
         ),
-        dividerTheme: const DividerThemeData(
+        dividerTheme: DividerThemeData(
           color: borderLight,
           thickness: 1,
         ),
       );
+  }
 
   static Color difficultyColor(String level) {
     switch (level.toLowerCase()) {
@@ -224,4 +244,63 @@ class AppTheme {
         return textSecondary;
     }
   }
+}
+
+/// Neutral colors for one mode.
+class _Palette {
+  const _Palette({
+    required this.background,
+    required this.card,
+    required this.surface,
+    required this.border,
+    required this.navBar,
+    required this.goldLight,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.cardGradient,
+    required this.heroGradient,
+  });
+
+  final Color background;
+  final Color card;
+  final Color surface;
+  final Color border;
+  final Color navBar;
+  final Color goldLight;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+  final List<Color> cardGradient;
+  final List<Color> heroGradient;
+
+  /// The original obsidian look.
+  static const dark = _Palette(
+    background: Color(0xFF090D16), // Obsidian Midnight
+    card: Color(0xFF121826), // Deep Slate Caviar
+    surface: Color(0xFF1B2438),
+    border: Color(0xFF28344D),
+    navBar: Color(0xFF0E131F),
+    goldLight: Color(0xFFF3D282),
+    textPrimary: Color(0xFFF8FAFC),
+    textSecondary: Color(0xFF94A3B8),
+    textMuted: Color(0xFF64748B),
+    cardGradient: [Color(0xFF161F33), Color(0xFF0E1422)],
+    heroGradient: [Color(0xFF1C2740), Color(0xFF090D16)],
+  );
+
+  /// Ivory and gold: readable in daylight, same accents.
+  static const light = _Palette(
+    background: Color(0xFFF7F5EF),
+    card: Color(0xFFFFFFFF),
+    surface: Color(0xFFEFEBE0),
+    border: Color(0xFFDDD6C4),
+    navBar: Color(0xFFFFFFFF),
+    goldLight: Color(0xFF8A6A12), // darker gold so gold text stays readable on white
+    textPrimary: Color(0xFF111827),
+    textSecondary: Color(0xFF475569),
+    textMuted: Color(0xFF64748B),
+    cardGradient: [Color(0xFFFFFFFF), Color(0xFFFAF7EF)],
+    heroGradient: [Color(0xFFFFFBF0), Color(0xFFF7F5EF)],
+  );
 }

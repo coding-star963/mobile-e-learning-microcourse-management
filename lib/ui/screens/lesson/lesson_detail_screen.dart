@@ -146,7 +146,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       const SizedBox(width: 4),
                       Text(
                         lesson?.displayDuration ?? '8 min',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppTheme.textSecondary, fontSize: 13),
                       ),
                       const Spacer(),
@@ -180,7 +180,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   const SizedBox(height: 14),
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
@@ -191,7 +191,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   // Description
                   Text(
                     description,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 15,
                       height: 1.5,
@@ -205,7 +205,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       const Icon(Icons.folder_open,
                           color: AppTheme.goldPrimary, size: 20),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Learning Resources',
                         style: TextStyle(
                           color: AppTheme.textPrimary,
@@ -216,7 +216,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       const Spacer(),
                       Text(
                         '${lesson?.resources.length ?? 0} files',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppTheme.textMuted, fontSize: 13),
                       ),
                     ],
@@ -230,7 +230,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppTheme.borderLight),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'No downloadable resources attached to this lesson.',
                           style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
@@ -270,7 +270,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                                 children: [
                                   Text(
                                     res.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.textPrimary,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
@@ -279,7 +279,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                                   const SizedBox(height: 4),
                                   Text(
                                     '${res.fileType.toUpperCase()} • ${res.formattedSize}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.textMuted,
                                       fontSize: 12,
                                     ),
@@ -366,7 +366,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     color: AppTheme.goldPrimary, size: 28),
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Lesson Locked',
                 style: TextStyle(
                   color: AppTheme.textPrimary,
@@ -378,7 +378,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               Text(
                 lesson?.lockedReason ?? 'This lesson is not available yet.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
               ),
             ],
           ),
@@ -391,7 +391,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         height: 120,
         color: AppTheme.bgCard,
         alignment: Alignment.center,
-        child: const Text(
+        child: Text(
           'This lesson has no video or audio. See the notes and resources below.',
           textAlign: TextAlign.center,
           style: TextStyle(color: AppTheme.textMuted, fontSize: 13),

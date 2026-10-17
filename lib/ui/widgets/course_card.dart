@@ -84,7 +84,7 @@ class CourseCard extends StatelessWidget {
                     children: [
                       Text(
                         course.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -102,7 +102,7 @@ class CourseCard extends StatelessWidget {
                           Flexible(
                             child: Text(
                               categoryName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppTheme.goldLight,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -144,7 +144,7 @@ class CourseCard extends StatelessWidget {
                           if (course.lessonIds.isNotEmpty)
                             Text(
                               '${course.lessonIds.length} modules',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppTheme.textMuted,
                                 fontSize: 11,
                               ),
@@ -166,7 +166,7 @@ class CourseCard extends StatelessWidget {
 
   Widget _thumbPlaceholder() {
     return Container(
-      color: const Color(0xFF192235),
+      color: AppTheme.bgSurface,
       child: const Center(
         child: Icon(
           Icons.school_outlined,

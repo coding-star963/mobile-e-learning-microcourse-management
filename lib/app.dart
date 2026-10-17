@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'core/theme.dart';
 import 'providers/auth_provider.dart';
+import 'providers/theme_provider.dart';
 import 'ui/screens/auth/forgot_password_screen.dart';
 import 'ui/screens/auth/login_screen.dart';
 import 'ui/screens/auth/profile_screen.dart';
@@ -22,12 +23,21 @@ class MicroLearnApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Optional so tests can build the app without it (then: dark, the original look).
+    final themeMode = context.watch<ThemeProvider?>()?.mode ?? ThemeMode.dark;
+
     return MaterialApp(
       title: 'MicroLearn',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      themeMode: themeMode,
+      // Switch instantly so the app's own colors and Material's stay in step.
+      themeAnimationDuration: Duration.zero,
+      builder: (context, child) => _PaletteSync(
+        brightness: Theme.of(context).brightness,
+        child: child ?? const SizedBox.shrink(),
+      ),
       initialRoute: '/',
       routes: {
         '/': (_) => const AuthGate(),
@@ -68,6 +78,42 @@ class MicroLearnApp extends StatelessWidget {
         },
       },
     );
+  }
+}
+
+/// Keeps [AppTheme]'s light/dark colors in step with the active theme.
+///
+/// Screens read those colors directly (not through Theme.of), so when the
+/// brightness changes every screen below is rebuilt in place; state such as
+/// the open page, tab and scroll position is kept.
+class _PaletteSync extends StatefulWidget {
+  const _PaletteSync({required this.brightness, required this.child});
+
+  final Brightness brightness;
+  final Widget child;
+
+  @override
+  State<_PaletteSync> createState() => _PaletteSyncState();
+}
+
+class _PaletteSyncState extends State<_PaletteSync> {
+  @override
+  void didUpdateWidget(_PaletteSync oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.brightness != widget.brightness) {
+      AppTheme.brightness = widget.brightness;
+      void rebuild(Element element) {
+        element.markNeedsBuild();
+        element.visitChildren(rebuild);
+      }
+      (context as Element).visitChildren(rebuild);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    AppTheme.brightness = widget.brightness;
+    return widget.child;
   }
 }
 
