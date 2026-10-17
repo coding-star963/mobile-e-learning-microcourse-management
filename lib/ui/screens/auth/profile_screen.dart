@@ -270,23 +270,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                       style: const TextStyle(color: AppTheme.textPrimary),
                       decoration: const InputDecoration(
-                        labelText: 'Email',
+                        labelText: 'Gmail address',
+                        hintText: 'name@gmail.com',
                         prefixIcon: Icon(Icons.mail_outline,
                             color: AppTheme.goldPrimary),
                       ),
-                      validator: (v) {
-                        final email = v?.trim() ?? '';
-                        if (!email.contains('@')) return 'Enter a valid email.';
-                        // Older non-Gmail emails may stay; a new one must be Gmail.
-                        final changed = email.toLowerCase() !=
-                            (auth.user?.email ?? '').toLowerCase();
-                        if (changed && !Validators.isGmail(email)) {
-                          return Validators.gmailError;
-                        }
-                        return null;
-                      },
+                      validator: Validators.gmail,
                     ),
                     const SizedBox(height: 18),
                     FilledButton(

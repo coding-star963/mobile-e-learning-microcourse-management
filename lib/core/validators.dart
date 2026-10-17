@@ -5,8 +5,16 @@ class Validators {
   static final RegExp _gmail = RegExp(r'^[^@\s]+@gmail\.com$', caseSensitive: false);
 
   static const String gmailError =
-      'Student accounts must use a Gmail address (ending in @gmail.com).';
+      'Only Gmail addresses are allowed (ending in @gmail.com).';
 
-  /// Student accounts may only use a Gmail address (name@gmail.com).
+  /// Every email entered in the app must be a Gmail address (name@gmail.com).
   static bool isGmail(String email) => _gmail.hasMatch(email.trim());
+
+  /// Form validator for every email field: required and Gmail only.
+  static String? gmail(String? value) {
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) return 'Enter your Gmail address.';
+    if (!isGmail(v)) return gmailError;
+    return null;
+  }
 }

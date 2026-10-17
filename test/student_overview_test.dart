@@ -49,7 +49,7 @@ void main() {
 
     await tester.pumpWidget(appUnderTest());
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextFormField, 'Email'), AppConstants.demoEmail);
+    await tester.enterText(find.widgetWithText(TextFormField, 'Gmail address'), AppConstants.demoEmail);
     await tester.enterText(find.widgetWithText(TextFormField, 'Password'), AppConstants.demoPassword);
     await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
     await tester.pumpAndSettle();

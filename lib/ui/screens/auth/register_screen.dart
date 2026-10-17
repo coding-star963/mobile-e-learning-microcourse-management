@@ -97,12 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hintText: 'name@gmail.com',
                   prefixIcon: Icon(Icons.mail_outline_rounded, color: AppTheme.goldPrimary),
                 ),
-                validator: (value) {
-                  final v = value?.trim() ?? '';
-                  if (v.isEmpty) return 'Enter your Gmail address.';
-                  if (!Validators.isGmail(v)) return Validators.gmailError;
-                  return null;
-                },
+                validator: Validators.gmail,
               ),
               const SizedBox(height: 14),
               TextFormField(

@@ -49,7 +49,7 @@ void main() {
 
   Future<void> typeCredentials(WidgetTester tester) async {
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email'),
+      find.widgetWithText(TextFormField, 'Gmail address'),
       AppConstants.demoEmail,
     );
     await tester.enterText(
@@ -173,7 +173,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'),
+        find.widgetWithText(TextFormField, 'Gmail address'),
         AppConstants.demoEmail,
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
@@ -203,8 +203,8 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'),
-        'nobody@nowhere.com',
+        find.widgetWithText(TextFormField, 'Gmail address'),
+        'nobody@gmail.com',
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
       await tester.pumpAndSettle();
@@ -237,7 +237,7 @@ void main() {
         'Alex Rivera',
       );
       expect(
-        (tester.widget(find.widgetWithText(TextFormField, 'Email'))
+        (tester.widget(find.widgetWithText(TextFormField, 'Gmail address'))
                 as TextFormField)
             .controller!
             .text,

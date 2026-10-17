@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme.dart';
+import '../../../core/validators.dart';
 import '../../../providers/auth_provider.dart';
 import 'reset_password_screen.dart';
 
@@ -102,16 +103,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 onFieldSubmitted: (_) => _submit(),
                 style: const TextStyle(color: AppTheme.textPrimary),
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Gmail address',
+                  hintText: 'name@gmail.com',
                   prefixIcon: Icon(Icons.mail_outline_rounded,
                       color: AppTheme.goldPrimary),
                 ),
-                validator: (value) {
-                  final v = value?.trim() ?? '';
-                  if (v.isEmpty) return 'Enter your email.';
-                  if (!v.contains('@')) return 'Enter a valid email address.';
-                  return null;
-                },
+                validator: Validators.gmail,
               ),
               if (auth.error != null) ...[
                 const SizedBox(height: 14),
