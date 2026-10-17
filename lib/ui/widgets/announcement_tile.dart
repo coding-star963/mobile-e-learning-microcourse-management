@@ -19,7 +19,9 @@ class AnnouncementTile extends StatelessWidget {
     final a = announcement;
     final color = a.isImportant
         ? AppTheme.accentRuby
-        : (a.isCourseUpdate ? AppTheme.accentEmerald : AppTheme.goldPrimary);
+        : (a.isCourseUpdate || a.isEnrollmentNotice
+            ? AppTheme.accentEmerald
+            : AppTheme.goldPrimary);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -43,9 +45,11 @@ class AnnouncementTile extends StatelessWidget {
             child: Icon(
               a.isImportant
                   ? Icons.priority_high_rounded
-                  : (a.isCourseUpdate
-                        ? Icons.update_rounded
-                        : Icons.campaign_outlined),
+                  : (a.isEnrollmentNotice
+                        ? Icons.how_to_reg_rounded
+                        : (a.isCourseUpdate
+                              ? Icons.update_rounded
+                              : Icons.campaign_outlined)),
               color: color,
               size: 20,
             ),
@@ -63,7 +67,7 @@ class AnnouncementTile extends StatelessWidget {
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              '${a.typeLabel} • ${a.courseTitle ?? 'All courses'}${a.publishedAt != null ? ' • ${formatShortDate(a.publishedAt!)}' : ''}',
+              '${a.typeLabel} • ${a.courseTitle ?? (a.isEnrollmentNotice ? 'Your account' : 'All courses')}${a.publishedAt != null ? ' • ${formatShortDate(a.publishedAt!)}' : ''}',
               style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
             ),
           ),
@@ -121,7 +125,7 @@ Future<void> showAnnouncementSheet(BuildContext context, Announcement a) {
             const SizedBox(height: 6),
             Text(
               [
-                a.courseTitle ?? 'All courses',
+                a.courseTitle ?? (a.isEnrollmentNotice ? 'Your account' : 'All courses'),
                 if (a.authorName != null) a.authorName!,
                 if (a.publishedAt != null) formatShortDate(a.publishedAt!),
               ].join(' • '),

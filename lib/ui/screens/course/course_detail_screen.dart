@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/auto_refresh.dart';
+import '../../../core/live_sync.dart';
 import '../../../core/theme.dart';
 import '../../../data/repositories/course_repository.dart';
 import '../../../models/course.dart';
@@ -23,8 +23,7 @@ class CourseDetailScreen extends StatefulWidget {
   State<CourseDetailScreen> createState() => _CourseDetailScreenState();
 }
 
-class _CourseDetailScreenState extends State<CourseDetailScreen>
-    with AutoRefresh {
+class _CourseDetailScreenState extends State<CourseDetailScreen> {
   Course? _course;
   bool _isLoading = true;
   String? _error;
@@ -35,13 +34,22 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
   void initState() {
     super.initState();
     _loadCourse();
+    LiveSync.revision.addListener(_onLiveSync);
   }
 
-  /// Picks up course edits and enrollment changes made on the web portal.
-  /// Lessons are refreshed by the home shell through [LessonProvider].
   @override
-  Future<void> onAutoRefresh() async {
-    if (_course == null || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
+  void dispose() {
+    LiveSync.revision.removeListener(_onLiveSync);
+    super.dispose();
+  }
+
+  void _onLiveSync() => _refreshFromServer();
+
+  /// Picks up course edits and enrollment changes made on the web portal as
+  /// soon as the home shell's live sync sees them. Lessons are refreshed by
+  /// the home shell through [LessonProvider].
+  Future<void> _refreshFromServer() async {
+    if (!mounted || _course == null || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
     try {
       final course = await context
           .read<CourseProvider>()
@@ -505,6 +513,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                         ),
                       ),
                     )
+                  // A teacher suspended or cancelled this enrollment on the web portal.
+                  : _myEnrollment != null && !_myEnrollment!.status.isOpen
+                      ? _ClosedEnrollmentNotice(status: _myEnrollment!.status)
                   : _myEnrollment != null
                       ? Container(
                           decoration: BoxDecoration(
@@ -641,6 +652,42 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Shown instead of "Continue learning" when the enrollment is suspended or
+/// cancelled: the lessons stay closed until a teacher reactivates it.
+class _ClosedEnrollmentNotice extends StatelessWidget {
+  const _ClosedEnrollmentNotice({required this.status});
+
+  final EnrollmentStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.accentRuby.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.accentRuby.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.block_rounded, color: AppTheme.accentRuby),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Your enrollment is ${status.label.toLowerCase()}. '
+              'Lessons are closed until your teacher reactivates it.',
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

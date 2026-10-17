@@ -11,6 +11,22 @@ class AuthException implements Exception {
   String toString() => message;
 }
 
+/// Result of a live-sync check against the server.
+class SessionCheck {
+  const SessionCheck({required this.valid, this.message, this.version});
+
+  /// False when the server ended the session (expired, revoked, suspended or
+  /// deactivated account). Network errors count as valid.
+  final bool valid;
+
+  /// The server's reason when it ended the session, e.g. the suspension notice.
+  final String? message;
+
+  /// Changes whenever data this student can see changes; null when unknown
+  /// (then every check should reload).
+  final String? version;
+}
+
 /// Contract for Module 1 — Authentication & Profile Management (AGENT.md §4.3).
 /// Methods align with the future REST endpoints in AGENT.md §5.
 abstract class AuthRepository {
@@ -35,6 +51,10 @@ abstract class AuthRepository {
   /// False only when the server rejects the saved session (expired, revoked,
   /// or deactivated account). Network errors count as valid.
   Future<bool> isSessionValid();
+
+  /// Live sync: whether the session is still valid, why not, and the
+  /// server's change marker for the student's data.
+  Future<SessionCheck> checkSession();
 
   /// 1.3 Password Recovery — checks that the email belongs to an account and
   /// returns a short-lived reset token for [resetPassword] (no email or OTP).

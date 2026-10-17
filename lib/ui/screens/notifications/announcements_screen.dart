@@ -15,6 +15,7 @@ class AnnouncementsScreen extends StatelessWidget {
     'course_update': 'Course updates',
     'important': 'Important',
     'general': 'General',
+    'enrollment': 'My enrollments',
   };
 
   @override

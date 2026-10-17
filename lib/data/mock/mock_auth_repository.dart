@@ -63,6 +63,11 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<bool> isSessionValid() async => true;
 
+  /// No change marker in the mock phase, so every check reloads.
+  @override
+  Future<SessionCheck> checkSession() async =>
+      SessionCheck(valid: await isSessionValid());
+
   /// 1.3 Password Recovery — records the reset request; fails for unknown emails.
   @override
   Future<String> requestPasswordReset(String email) async {

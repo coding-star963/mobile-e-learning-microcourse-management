@@ -86,8 +86,11 @@ class RestAuthRepository implements AuthRepository {
       return AppUser.fromJson(userMap);
     }
     if (res.statusCode == 401 || res.statusCode == 403 || userMap != null) {
-      await _api.clearToken(); // expired, revoked, or not a student
+      await _api.clearToken(); // expired, revoked, suspended, or not a student
     }
+    // Tell the student why they are back at the login screen.
+    final notice = _accountNotice(res);
+    if (notice != null) throw AuthException(notice);
     return null;
   }
 
@@ -99,13 +102,33 @@ class RestAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<bool> isSessionValid() async {
-    final res = await _api.get('/user');
+  Future<bool> isSessionValid() async => (await checkSession()).valid;
+
+  /// GET /sync answers in milliseconds; a suspended or deactivated account
+  /// gets 403/401 with the reason instead.
+  @override
+  Future<SessionCheck> checkSession() async {
+    final res = await _api.get('/sync');
     if (res.statusCode == 401 || res.statusCode == 403) {
+      // A suspended account keeps its token on the server; revoke this one.
+      if (res.statusCode == 403) await _api.post('/logout');
       await _api.clearToken();
-      return false;
+      return SessionCheck(valid: false, message: _accountNotice(res));
     }
-    return true;
+    final data = res.data;
+    return SessionCheck(
+      valid: true,
+      version: res.isSuccess && data is Map ? data['version']?.toString() : null,
+    );
+  }
+
+  /// The server's suspension/deactivation notice, if that is why it refused.
+  static String? _accountNotice(ApiResponse res) {
+    final data = res.data;
+    if (data is Map && data['account_status'] != null) {
+      return data['message']?.toString();
+    }
+    return null;
   }
 
   /// 1.3 Password Recovery — the server returns `reset_token` when the email exists.

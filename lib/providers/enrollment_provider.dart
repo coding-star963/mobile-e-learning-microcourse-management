@@ -16,6 +16,18 @@ class EnrollmentProvider extends ChangeNotifier {
   bool isLoading = false;
   String? error;
 
+  /// True once [enrollments] came from the server at least once, so a missing
+  /// course really means "not enrolled" (e.g. a teacher deleted the record).
+  bool hasLoaded = false;
+
+  /// The student's enrollment in [courseId] from the loaded list, if any.
+  Enrollment? enrollmentFor(String courseId) {
+    for (final enrollment in enrollments) {
+      if (enrollment.courseId == courseId) return enrollment;
+    }
+    return null;
+  }
+
   /// 3.4 lookups cached per course id for the detail screen's action button.
   final Map<String, Enrollment?> _enrollmentByCourse = {};
 
@@ -26,6 +38,7 @@ class EnrollmentProvider extends ChangeNotifier {
     if (silent) {
       try {
         enrollments = await _enrollmentRepository.getMyEnrollments(studentId);
+        hasLoaded = true;
         // Course screens re-check their enrollment against the fresh data.
         _enrollmentByCourse.clear();
         error = null;
@@ -38,6 +51,8 @@ class EnrollmentProvider extends ChangeNotifier {
     notifyListeners();
     try {
       enrollments = await _enrollmentRepository.getMyEnrollments(studentId);
+      hasLoaded = true;
+      _enrollmentByCourse.clear();
     } on Exception catch (e) {
       error = 'Could not load your courses. Please try again.';
       debugPrint('EnrollmentProvider.loadEnrollments failed: $e');

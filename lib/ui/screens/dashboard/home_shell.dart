@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/auto_refresh.dart';
+import '../../../core/constants.dart';
+import '../../../core/live_sync.dart';
 import '../../../core/theme.dart';
 import '../../../providers/announcement_provider.dart';
 import '../../../providers/auth_provider.dart';
@@ -27,6 +29,10 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> with AutoRefresh {
   int _tabIndex = 0;
 
+  /// Live-sync marker the providers were last reloaded for.
+  String? _syncedVersion;
+  DateTime? _lastFullRefresh;
+
   @override
   void initState() {
     super.initState();
@@ -48,10 +54,19 @@ class _HomeShellState extends State<HomeShell> with AutoRefresh {
     final enrollments = context.read<EnrollmentProvider>();
     final lessons = context.read<LessonProvider>();
 
-    // e.g. an administrator deactivated this student on the web portal.
-    if (!await auth.isSessionValid()) {
+    // e.g. a teacher suspended or an administrator deactivated this student.
+    final check = await auth.checkSession();
+    if (!check.valid) {
       navigator.popUntil((route) => route.isFirst);
-      auth.endRejectedSession();
+      auth.endRejectedSession(check.message);
+      return;
+    }
+
+    // Reload only when the server's data changed (or as a periodic safety net).
+    final now = DateTime.now();
+    final recentlyRefreshed = _lastFullRefresh != null &&
+        now.difference(_lastFullRefresh!) < AppConstants.fullRefreshInterval;
+    if (check.version != null && check.version == _syncedVersion && recentlyRefreshed) {
       return;
     }
 
@@ -62,6 +77,44 @@ class _HomeShellState extends State<HomeShell> with AutoRefresh {
       enrollments.loadEnrollments(studentId, silent: true),
       lessons.refreshLoaded(),
     ]);
+    _syncedVersion = check.version;
+    _lastFullRefresh = now;
+    LiveSync.bump();
+    _announceNewNotices(announcements);
+  }
+
+  /// Ids of personal notices already on screen (null until the first load).
+  Set<String>? _knownNoticeIds;
+
+  /// Pops up a teacher's enrollment action (suspended, cancelled, deleted…)
+  /// the moment it arrives; it also stays in Notifications.
+  void _announceNewNotices(AnnouncementProvider provider) {
+    final notices = provider.announcements.where((a) => a.isEnrollmentNotice).toList();
+    final known = _knownNoticeIds;
+    _knownNoticeIds = notices.map((a) => a.id).toSet();
+    if (known == null || !mounted) return;
+
+    final fresh = notices.where((a) => !known.contains(a.id)).toList();
+    if (fresh.isEmpty) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: AppTheme.bgCard,
+        duration: const Duration(seconds: 6),
+        content: Text(
+          fresh.length == 1
+              ? '${fresh.first.title}: ${fresh.first.content}'
+              : 'You have ${fresh.length} new enrollment updates.',
+          style: const TextStyle(color: AppTheme.textPrimary),
+        ),
+        action: SnackBarAction(
+          label: 'View',
+          textColor: AppTheme.goldPrimary,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+          ),
+        ),
+      ),
+    );
   }
 
   /// 7.1 dashboard and 6.3 notification count for the signed-in student.

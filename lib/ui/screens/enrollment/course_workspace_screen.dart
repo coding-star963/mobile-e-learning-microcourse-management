@@ -42,14 +42,17 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
     } catch (_) {}
     final lessons = lessonProvider?.lessonsFor(widget.courseId) ?? const [];
 
-    // A teacher may have suspended or cancelled this enrollment on the web portal.
-    EnrollmentStatus? enrollmentStatus;
+    // A teacher may have suspended, cancelled or deleted this enrollment on the web portal.
+    EnrollmentProvider? enrollmentProvider;
     try {
-      for (final e in context.watch<EnrollmentProvider>().enrollments) {
-        if (e.courseId == widget.courseId) enrollmentStatus = e.status;
-      }
+      enrollmentProvider = context.watch<EnrollmentProvider>();
     } catch (_) {}
-    final enrollmentOpen = enrollmentStatus?.isOpen ?? true;
+    final enrollment = enrollmentProvider?.enrollmentFor(widget.courseId);
+    final enrollmentRemoved =
+        enrollment == null && (enrollmentProvider?.hasLoaded ?? false);
+    final EnrollmentStatus? enrollmentStatus = enrollment?.status;
+    final enrollmentOpen =
+        !enrollmentRemoved && (enrollmentStatus?.isOpen ?? true);
     final badgeColor = enrollmentOpen ? AppTheme.goldPrimary : AppTheme.accentRuby;
 
     Lesson? nextIncompleteLesson;
@@ -108,9 +111,11 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                               color: badgeColor.withValues(alpha: 0.4)),
                         ),
                         child: Text(
-                          enrollmentOpen
-                              ? 'You are enrolled in this course'
-                              : 'Enrollment ${enrollmentStatus!.label.toLowerCase()} — contact your teacher',
+                          enrollmentRemoved
+                              ? 'You are no longer enrolled — enroll again from the catalog'
+                              : enrollmentOpen
+                                  ? 'You are enrolled in this course'
+                                  : 'Enrollment ${enrollmentStatus!.label.toLowerCase()} — contact your teacher',
                           style: TextStyle(
                             color: badgeColor,
                             fontWeight: FontWeight.w800,
@@ -169,8 +174,8 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 5.5 Continue Learning CTA button
-                  if (nextIncompleteLesson != null)
+                  // 5.5 Continue Learning CTA button (only while the enrollment is open)
+                  if (enrollmentOpen && nextIncompleteLesson != null)
                     FilledButton.icon(
                       style: FilledButton.styleFrom(
                         backgroundColor: AppTheme.goldPrimary,

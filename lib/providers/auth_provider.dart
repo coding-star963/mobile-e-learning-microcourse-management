@@ -31,6 +31,11 @@ class AuthProvider extends ChangeNotifier {
     try {
       user = await _authRepository.restoreSession();
       status = user == null ? AuthStatus.unauthenticated : AuthStatus.authenticated;
+    } on AuthException catch (e) {
+      // e.g. the account was suspended while the app was closed.
+      user = null;
+      status = AuthStatus.unauthenticated;
+      error = e.message;
     } catch (_) {
       user = null;
       status = AuthStatus.unauthenticated;
@@ -101,12 +106,18 @@ class AuthProvider extends ChangeNotifier {
   /// deactivated this account on the web portal).
   Future<bool> isSessionValid() => _authRepository.isSessionValid();
 
-  /// Returns to the login screen after the server ended the session.
-  void endRejectedSession() {
+  /// Live sync check: session validity, the server's reason when it ended
+  /// the session, and the change marker for the student's data.
+  Future<SessionCheck> checkSession() => _authRepository.checkSession();
+
+  /// Returns to the login screen after the server ended the session, showing
+  /// the server's [reason] (e.g. the suspension notice) when there is one.
+  void endRejectedSession([String? reason]) {
     user = null;
     status = AuthStatus.unauthenticated;
-    error = 'Your session has ended or your account was deactivated. '
-        'Please log in again.';
+    error = reason ??
+        'Your session has ended or your account was deactivated. '
+            'Please log in again.';
     notifyListeners();
   }
 

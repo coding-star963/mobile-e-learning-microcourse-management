@@ -15,7 +15,11 @@ class AppConstants {
   /// Simulated network latency for mock repositories (AGENT.md §6).
   static const Duration mockLatency = Duration(milliseconds: 300);
 
-  /// How often open screens re-check the server so changes made on the web
-  /// portal appear on the phone without a manual refresh.
-  static const Duration autoRefreshInterval = Duration(seconds: 10);
+  /// How often the app checks the server's live-sync marker (GET /sync, a
+  /// tiny request) so changes made on the web portal appear within seconds.
+  /// Screens only reload when the marker changes.
+  static const Duration autoRefreshInterval = Duration(seconds: 3);
+
+  /// Screens also reload at least this often, even without a change marker.
+  static const Duration fullRefreshInterval = Duration(seconds: 30);
 }

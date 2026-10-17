@@ -9,11 +9,22 @@ import 'api_client.dart';
 class RestAnnouncementRepository implements AnnouncementRepository {
   final ApiClient _api = ApiClient.instance;
 
+  /// Announcements plus the student's personal notices (type "enrollment":
+  /// a teacher enrolled, suspended, reactivated, cancelled or deleted one of
+  /// their enrollments), newest first.
   @override
   Future<List<Announcement>> getAnnouncements(String studentId) async {
-    final res = await _api.get('/announcements', query: {'per_page': 100});
+    final results = await Future.wait([
+      _api.get('/announcements', query: {'per_page': 100}),
+      _api.get('/notifications', query: {'per_page': 50}),
+    ]);
+    final res = results[0];
     if (!res.isSuccess) _api.fail(res, 'Could not load announcements.');
     final list = ApiClient.dataList(res.data).map(Announcement.fromJson).toList();
+    // Personal notices are optional: announcements still show if they fail.
+    if (results[1].isSuccess) {
+      list.addAll(ApiClient.dataList(results[1].data).map(Announcement.fromJson));
+    }
     list.sort((a, b) => (b.publishedAt ?? DateTime(0)).compareTo(a.publishedAt ?? DateTime(0)));
     return list;
   }

@@ -35,7 +35,8 @@ class Announcement {
   final String title;
   final String content;
 
-  /// 'general', 'course_update' (6.2) or 'important'.
+  /// 'general', 'course_update' (6.2), 'important', or 'enrollment' (a
+  /// personal notice from GET /notifications).
   final String type;
   final String? courseId;
   final String? courseTitle;
@@ -45,9 +46,13 @@ class Announcement {
   bool get isCourseUpdate => type == 'course_update';
   bool get isImportant => type == 'important';
 
+  /// A personal notice about the student's own enrollment or account.
+  bool get isEnrollmentNotice => type == 'enrollment';
+
   String get typeLabel => switch (type) {
         'course_update' => 'Course update',
         'important' => 'Important',
+        'enrollment' => 'My enrollment',
         _ => 'General',
       };
 

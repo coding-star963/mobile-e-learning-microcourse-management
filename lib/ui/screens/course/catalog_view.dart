@@ -35,6 +35,9 @@ class _CatalogViewState extends State<CatalogView> {
   @override
   Widget build(BuildContext context) {
     final courseProvider = context.watch<CourseProvider>();
+    final selectedId = courseProvider.selectedCategoryId;
+    final selectedCategory =
+        selectedId == null ? null : courseProvider.categoryById(selectedId);
     final user = context.watch<AuthProvider>().user;
 
     return Column(
@@ -109,7 +112,7 @@ class _CatalogViewState extends State<CatalogView> {
                 onTap: () =>
                     context.read<CourseProvider>().filterByCategory(null),
               ),
-              ...courseProvider.categories.map(
+              ...courseProvider.browsableCategories.map(
                 (category) => _categoryChip(
                   context,
                   label: category.name,
@@ -123,6 +126,18 @@ class _CatalogViewState extends State<CatalogView> {
             ],
           ),
         ),
+
+        // 2.3 The selected category's description, written by administrators.
+        if (selectedCategory?.description != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            child: Text(
+              selectedCategory!.description!,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: AppTheme.textMuted, fontSize: 12, height: 1.4),
+            ),
+          ),
 
         // 2.1 Course List
         Expanded(
@@ -246,7 +261,7 @@ class _CatalogViewState extends State<CatalogView> {
         final category = provider.categoryById(course.categoryId);
         return CourseCard(
           course: course,
-          categoryName: category?.name ?? 'General',
+          categoryName: category?.name ?? CourseProvider.uncategorized,
           onTap: () {
             Navigator.of(context).pushNamed(
               '/course-detail',

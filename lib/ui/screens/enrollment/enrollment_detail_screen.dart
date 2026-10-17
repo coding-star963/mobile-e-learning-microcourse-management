@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/live_sync.dart';
 import '../../../core/theme.dart';
 import '../../../models/course.dart';
 import '../../../models/enrollment.dart';
@@ -31,6 +32,41 @@ class _EnrollmentDetailScreenState extends State<EnrollmentDetailScreen> {
   void initState() {
     super.initState();
     _load();
+    LiveSync.revision.addListener(_onLiveSync);
+  }
+
+  @override
+  void dispose() {
+    LiveSync.revision.removeListener(_onLiveSync);
+    super.dispose();
+  }
+
+  /// A teacher changed something on the web portal: reload this record
+  /// quietly, or explain that it was deleted.
+  Future<void> _onLiveSync() async {
+    // Only the screen on top reloads; screens underneath catch up via the providers.
+    if (!mounted || _enrollment == null || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    try {
+      final user = context.read<AuthProvider>().user!;
+      final enrollment = await context.read<EnrollmentProvider>().loadEnrollmentDetails(
+            studentId: user.id,
+            enrollmentId: widget.enrollmentId,
+          );
+      if (mounted) setState(() => _enrollment = enrollment);
+    } on Exception {
+      if (!mounted) return;
+      final stillEnrolled = context
+          .read<EnrollmentProvider>()
+          .enrollments
+          .any((e) => e.id == widget.enrollmentId);
+      if (!stillEnrolled) {
+        setState(() {
+          _enrollment = null;
+          _error = 'This enrollment record was deleted by your teacher. '
+              'You can enroll again from the course catalog.';
+        });
+      }
+    }
   }
 
   Future<void> _load() async {
@@ -97,8 +133,8 @@ class _EnrollmentDetailScreenState extends State<EnrollmentDetailScreen> {
               : _EnrollmentContentView(
                   enrollment: enrollment,
                   course: course,
-                  categoryName:
-                      courseProvider.categoryNameOf(enrollment.courseId),
+                  categoryName: courseProvider
+                      .categoryNameOf(course?.categoryId ?? ''),
                   enrollmentsCount: enrollmentProvider.enrollments.length,
                   lessonProvider: lessonProvider,
                   onContinue: () => Navigator.of(context).pushNamed(

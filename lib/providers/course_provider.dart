@@ -132,13 +132,22 @@ class CourseProvider extends ChangeNotifier {
     return _courseDetails[courseId];
   }
 
-  /// Display name for a category id, falling back to the id itself.
+  /// Display name for a category id; courses without one (e.g. after an
+  /// administrator deleted their category) are "Uncategorized", as on the web.
   String categoryNameOf(String categoryId) {
     for (final category in categories) {
       if (category.id == categoryId) return category.name;
     }
-    return categoryId;
+    return uncategorized;
   }
+
+  static const String uncategorized = 'Uncategorized';
+
+  /// Categories that have at least one published course, for the catalog
+  /// filter chips (an empty category would only lead to an empty list).
+  List<CourseCategory> get browsableCategories => categories
+      .where((c) => c.courseCount == null || c.courseCount! > 0 || c.id == selectedCategoryId)
+      .toList();
 
   CourseCategory? categoryById(String categoryId) {
     for (final category in categories) {
