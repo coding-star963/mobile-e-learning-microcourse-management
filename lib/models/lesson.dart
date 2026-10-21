@@ -24,6 +24,8 @@ class Lesson {
     this.isFreePreview = false,
     this.resources = const [],
     this.isCompleted = false,
+    this.quizTitle,
+    this.quizQuestionCount = 0,
   });
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
@@ -56,6 +58,8 @@ class Lesson {
       isFreePreview: (json['isFreePreview'] ?? json['is_free_preview'] ?? false) as bool,
       isCompleted: (json['isCompleted'] ?? json['is_completed'] ?? false) as bool,
       resources: parsedResources,
+      quizTitle: (json['quiz'] as Map?)?['title'] as String?,
+      quizQuestionCount: (json['quiz'] as Map?)?['question_count'] as int? ?? 0,
     );
   }
 
@@ -82,6 +86,9 @@ class Lesson {
 
   /// 5.1 Whether the signed-in student has completed this lesson (from the server).
   final bool isCompleted;
+  final String? quizTitle;
+  final int quizQuestionCount;
+  bool get hasQuiz => quizTitle != null;
 
   /// 4.6 View Lesson Availability — locked by the teacher, or scheduled for later.
   bool get isLocked {
@@ -102,7 +109,7 @@ class Lesson {
       String two(int n) => n.toString().padLeft(2, '0');
       return 'Opens on ${d.year}-${two(d.month)}-${two(d.day)} at ${two(d.hour)}:${two(d.minute)}.';
     }
-    return 'Your teacher has not opened this lesson yet.';
+    return 'An administrator has not opened this lesson yet.';
   }
   bool get isFree => availability.toLowerCase() == 'free' || isFreePreview;
   bool get hasVideo => videoUrl != null && videoUrl!.isNotEmpty;
@@ -140,6 +147,7 @@ class Lesson {
         'is_free_preview': isFreePreview,
         'resources': resources.map((r) => r.toJson()).toList(),
         'is_completed': isCompleted,
+        'quiz': hasQuiz ? {'title': quizTitle, 'question_count': quizQuestionCount} : null,
       };
 
   @override

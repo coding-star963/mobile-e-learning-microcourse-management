@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/media_url.dart';
+
 import '../../core/theme.dart';
 import '../../models/course.dart';
 
@@ -50,8 +52,9 @@ class CourseCard extends StatelessWidget {
                             course.thumbnailUrl!.isNotEmpty)
                           Image.network(
                             course.thumbnailUrl!,
+                            headers: MediaUrl.headersFor(course.thumbnailUrl!),
                             fit: BoxFit.cover,
-                            // On web, /storage files have no CORS headers.
+                            // The API media endpoint supports cross-origin image requests.
                             webHtmlElementStrategy:
                                 WebHtmlElementStrategy.fallback,
                             errorBuilder: (_, _, _) =>

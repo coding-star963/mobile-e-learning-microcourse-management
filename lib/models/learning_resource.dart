@@ -27,6 +27,22 @@ class LearningResource {
   final int fileSize;
   final int order;
 
+  String get _extension {
+    final path = Uri.tryParse(fileUrl ?? '')?.path ?? '';
+    final source = path.contains('.') ? path : name;
+    return source.split('.').last.toLowerCase();
+  }
+
+  bool get isImage => fileType.toLowerCase().startsWith('image/') ||
+      ['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(_extension) ||
+      ['jpg', 'jpeg', 'png', 'gif', 'webp', 'image'].contains(fileType.toLowerCase());
+  bool get isVideo => fileType.toLowerCase().startsWith('video/') ||
+      ['mp4', 'webm', 'ogv'].contains(_extension) ||
+      ['mp4', 'webm', 'video'].contains(fileType.toLowerCase());
+  bool get isAudio => fileType.toLowerCase().startsWith('audio/') ||
+      ['mp3', 'wav', 'ogg', 'm4a'].contains(_extension) ||
+      ['mp3', 'wav', 'ogg', 'audio'].contains(fileType.toLowerCase());
+
   String get formattedSize {
     if (fileSize <= 0) return 'Document';
     if (fileSize < 1024) return '$fileSize B';

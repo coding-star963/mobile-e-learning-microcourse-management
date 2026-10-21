@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/media_url.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/live_sync.dart';
@@ -271,7 +273,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               const SizedBox(height: 8),
 
                               Text(
-                                '${courseProvider.categoryNameOf(course.categoryId)} • ${course.difficultyLevel}',
+                                '${courseProvider.categoryNameOf(course.categoryId)} â€¢ ${course.difficultyLevel}',
                                 style: TextStyle(
                                   color: AppTheme.goldLight,
                                   fontSize: 13,
@@ -593,8 +595,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           if (course.thumbnailUrl != null && course.thumbnailUrl!.isNotEmpty)
             Image.network(
               course.thumbnailUrl!,
+              headers: MediaUrl.headersFor(course.thumbnailUrl!),
               fit: BoxFit.cover,
-              // On web, /storage files have no CORS headers.
+              // The API media endpoint supports cross-origin image requests.
               webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
               errorBuilder: (_, _, _) => const SizedBox(),
             ),
@@ -680,7 +683,7 @@ class _ClosedEnrollmentNotice extends StatelessWidget {
           Expanded(
             child: Text(
               'Your enrollment is ${status.label.toLowerCase()}. '
-              'Lessons are closed until your teacher reactivates it.',
+              'Lessons are closed until an administrator reactivates it.',
               style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontWeight: FontWeight.w600,

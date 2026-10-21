@@ -132,8 +132,11 @@ void main() {
 
   group('1.1 Registration', () {
     Future<void> fillRegistration(WidgetTester tester, String email) async {
-      await tester.tap(find.text('New student? Create an account'));
+      await tester.tap(find.text('New learner? Create an account'));
       await tester.pumpAndSettle();
+      expect(find.textContaining('Everyone is welcome, including out-of-school youth.'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'School'), findsNothing);
+      expect(find.widgetWithText(TextFormField, 'Section'), findsNothing);
       await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), 'Juan Dela Cruz');
       await tester.enterText(find.widgetWithText(TextFormField, 'Gmail address'), email);
       await tester.enterText(find.widgetWithText(TextFormField, 'Password'), 'password123');
@@ -150,7 +153,7 @@ void main() {
       await fillRegistration(tester, 'juan@yahoo.com');
 
       expect(find.text(Validators.gmailError), findsOneWidget);
-      expect(find.text('Join as a student'), findsOneWidget); // still on sign-up
+      expect(find.text('Join as a learner'), findsOneWidget); // still on sign-up
     });
 
     testWidgets('creates a student account with Gmail and opens the app',

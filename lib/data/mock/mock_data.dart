@@ -483,7 +483,7 @@ class MockData {
     {
       'id': 'announcement-001',
       'title': 'Welcome to the new semester',
-      'content': 'Browse the catalog and enroll in the micro-courses for your section.',
+      'content': 'Browse the catalog and enroll in the micro-courses that interest you.',
       'type': 'general',
       'course_id': null,
       'courseTitle': null,

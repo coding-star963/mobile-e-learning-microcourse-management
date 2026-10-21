@@ -33,7 +33,7 @@ class RestAuthRepository implements AuthRepository {
       await _api.post('/logout');
       await _api.clearToken();
       throw const AuthException(
-        'This app is for students. Administrators and teachers please use the web portal.',
+        'This app is for students. Administrators please use the web portal.',
       );
     }
 

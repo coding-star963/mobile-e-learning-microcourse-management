@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/theme.dart';
+import '../../core/media_url.dart';
 
 /// 4.3 Play Video/Audio — streams the lesson's video or audio from the server.
 /// The player is created on the first tap so the screen opens instantly.
@@ -23,56 +24,108 @@ class LessonMediaPlayer extends StatefulWidget {
 
 class _LessonMediaPlayerState extends State<LessonMediaPlayer> {
   VideoPlayerController? _controller;
+  VideoPlayerController? _pending;
+  int _loadId = 0;
   bool _loading = false;
   String? _error;
 
+  void _release() {
+    _loadId++;
+    _controller?.removeListener(_onTick);
+    _controller?.dispose().ignore();
+    _pending?.dispose().ignore();
+    _controller = null;
+    _pending = null;
+  }
+
+  @override
+  void didUpdateWidget(covariant LessonMediaPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url || oldWidget.isAudio != widget.isAudio) {
+      _release();
+      _loading = false;
+      _error = null;
+    }
+  }
+
   @override
   void dispose() {
-    _controller?.dispose();
+    _release();
     super.dispose();
   }
 
   Future<void> _start() async {
+    if (_loading) return;
+    final loadId = ++_loadId;
     setState(() {
       _loading = true;
       _error = null;
     });
-    final controller = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+    final controller = VideoPlayerController.networkUrl(
+      Uri.parse(widget.url),
+      httpHeaders: MediaUrl.headersFor(widget.url),
+    );
+    _pending = controller;
     try {
-      await controller.initialize();
+      await controller.initialize().timeout(const Duration(seconds: 30));
+      if (!mounted || loadId != _loadId) return;
+      _pending = null;
+      _controller = controller;
       controller.addListener(_onTick);
       await controller.play();
-      if (!mounted) {
-        await controller.dispose();
-        return;
-      }
+      if (!mounted || loadId != _loadId) return;
       setState(() {
-        _controller = controller;
         _loading = false;
       });
     } catch (_) {
-      // Don't wait for cleanup of a player that never loaded.
+      controller.removeListener(_onTick);
       controller.dispose().ignore();
-      if (!mounted) return;
+      if (!mounted || loadId != _loadId) return;
       setState(() {
+        _controller = null;
+        _pending = null;
         _loading = false;
-        _error = 'Could not play this media. Check your connection and try again.';
+        _error =
+            'Could not play this media. Check your connection and try again.';
       });
     }
   }
 
   void _onTick() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {
+      if (_controller?.value.hasError ?? false) {
+        _error = 'Playback stopped. Check your connection and retry.';
+      }
+    });
   }
 
-  void _togglePlay() {
+  void _retry() {
+    _release();
+    _loading = false;
+    _start();
+  }
+
+  Future<void> _togglePlay() async {
+    if (_error != null) {
+      _retry();
+      return;
+    }
     final controller = _controller;
-    if (controller == null) {
-      _start();
-    } else if (controller.value.isPlaying) {
-      controller.pause();
-    } else {
-      controller.play();
+    try {
+      if (controller == null) {
+        await _start();
+      } else if (controller.value.isPlaying) {
+        await controller.pause();
+      } else {
+        await controller.play();
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _error = 'Playback stopped. Check your connection and retry.';
+        });
+      }
     }
   }
 
@@ -105,9 +158,13 @@ class _LessonMediaPlayerState extends State<LessonMediaPlayer> {
                   )
                 else
                   Icon(
-                    widget.isAudio ? Icons.graphic_eq_rounded : Icons.ondemand_video_rounded,
+                    widget.isAudio
+                        ? Icons.graphic_eq_rounded
+                        : Icons.ondemand_video_rounded,
                     size: 96,
-                    color: AppTheme.goldPrimary.withValues(alpha: isPlaying ? 0.6 : 0.2),
+                    color: AppTheme.goldPrimary.withValues(
+                      alpha: isPlaying ? 0.6 : 0.2,
+                    ),
                   ),
                 if (_loading)
                   const CircularProgressIndicator(color: AppTheme.goldPrimary)
@@ -125,7 +182,9 @@ class _LessonMediaPlayerState extends State<LessonMediaPlayer> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.goldPrimary.withValues(alpha: 0.4),
+                              color: AppTheme.goldPrimary.withValues(
+                                alpha: 0.4,
+                              ),
                               blurRadius: 20,
                               offset: const Offset(0, 4),
                             ),
@@ -162,8 +221,10 @@ class _LessonMediaPlayerState extends State<LessonMediaPlayer> {
                     if (controller != null)
                       IconButton(
                         visualDensity: VisualDensity.compact,
-                        icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow_rounded,
-                            color: AppTheme.goldPrimary),
+                        icon: Icon(
+                          isPlaying ? Icons.pause : Icons.play_arrow_rounded,
+                          color: AppTheme.goldPrimary,
+                        ),
                         tooltip: isPlaying ? 'Pause' : 'Play',
                         onPressed: _togglePlay,
                       ),
@@ -171,24 +232,48 @@ class _LessonMediaPlayerState extends State<LessonMediaPlayer> {
                       controller != null
                           ? '${_format(controller.value.position)} / ${_format(controller.value.duration)}'
                           : (widget.isAudio ? 'Audio lesson' : 'Video lesson'),
-                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
                     const Spacer(),
-                    Icon(widget.isAudio ? Icons.audiotrack : Icons.hd_outlined,
-                        color: AppTheme.goldPrimary, size: 16),
+                    Icon(
+                      widget.isAudio ? Icons.audiotrack : Icons.hd_outlined,
+                      color: AppTheme.goldPrimary,
+                      size: 16,
+                    ),
                     if (widget.durationLabel != null) ...[
                       const SizedBox(width: 8),
-                      Text(widget.durationLabel!,
-                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                      Text(
+                        widget.durationLabel!,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
                     ],
                   ],
                 ),
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Text(_error!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppTheme.accentRuby, fontSize: 12)),
+                    child: Column(
+                      children: [
+                        Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppTheme.accentRuby,
+                            fontSize: 12,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _retry,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
                   ),
               ],
             ),

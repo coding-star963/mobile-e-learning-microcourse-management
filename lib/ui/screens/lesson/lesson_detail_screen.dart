@@ -5,8 +5,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme.dart';
 import '../../../models/learning_resource.dart';
 import '../../../models/lesson.dart';
+import '../../../data/repositories/quiz_repository.dart';
+import 'quiz_screen.dart';
 import '../../../providers/lesson_provider.dart';
 import '../../widgets/lesson_media_player.dart';
+import '../../widgets/learning_resource_card.dart';
 
 /// Module 4: Lesson Detail & Multimedia Player Screen (4.2, 4.3, 4.4, 5.1).
 /// Features a luxury cinematic player, instant resource access, and lesson completion.
@@ -238,69 +241,29 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       ),
                     )
                   else
-                    ...lesson.resources.map((res) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: AppTheme.bgCard,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppTheme.borderLight),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: AppTheme.bgSurface,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                _resourceIcon(res.fileType),
-                                color: AppTheme.goldPrimary,
-                                size: 22,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    res.name,
-                                    style: TextStyle(
-                                      color: AppTheme.textPrimary,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${res.fileType.toUpperCase()} • ${res.formattedSize}',
-                                    style: TextStyle(
-                                      color: AppTheme.textMuted,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.download_rounded,
-                                  color: AppTheme.goldPrimary),
-                              tooltip: 'Open or download resource',
-                              onPressed: () => _openResource(res),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
+                    ...lesson.resources.map((res) => LearningResourceCard(
+                      key: ValueKey(res.id),
+                      resource: res,
+                      onOpen: () => _openResource(res),
+                    )),
 
                   const SizedBox(height: 32),
 
                   // Action Buttons: Mark Complete & Next Lesson
+                  if (lesson != null && lesson.hasQuiz && !isLocked) ...[
+                    Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                      Text(lesson.quizTitle!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                      const SizedBox(height: 8),
+                      Text('${lesson.quizQuestionCount} quiz ${lesson.quizQuestionCount == 1 ? 'question' : 'questions'} • Get your score after submitting.'),
+                      const SizedBox(height: 12),
+                      FilledButton.icon(icon: const Icon(Icons.quiz_outlined), label: const Text('Open Quiz'), onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => QuizScreen(
+                          courseId: widget.courseId, lessonId: widget.lessonId, repository: context.read<QuizRepository>(),
+                        )));
+                      }),
+                    ]))),
+                    const SizedBox(height: 24),
+                  ],
                   Row(
                     children: [
                       Expanded(
@@ -399,22 +362,13 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       );
     }
 
-    // 4.3 Play Video/Audio
-    final url = lesson.hasVideo ? lesson.videoUrl! : lesson.audioUrl!;
-    return LessonMediaPlayer(
-      key: ValueKey(url),
-      url: url,
-      isAudio: !lesson.hasVideo,
-      durationLabel: lesson.displayDuration,
-    );
-  }
-
-  static IconData _resourceIcon(String fileType) {
-    final type = fileType.toLowerCase();
-    if (type.contains('pdf')) return Icons.picture_as_pdf;
-    if (type.contains('image')) return Icons.image_outlined;
-    if (type.contains('video')) return Icons.movie_outlined;
-    if (type.contains('audio')) return Icons.audiotrack;
-    return Icons.insert_drive_file_outlined;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (lesson.hasVideo)
+        LessonMediaPlayer(key: ValueKey('video:${lesson.videoUrl}'), url: lesson.videoUrl!,
+            isAudio: false, durationLabel: lesson.displayDuration),
+      if (lesson.hasAudio)
+        LessonMediaPlayer(key: ValueKey('audio:${lesson.audioUrl}'), url: lesson.audioUrl!,
+            isAudio: true, durationLabel: lesson.displayDuration),
+    ]);
   }
 }

@@ -60,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const Icon(Icons.person_add_alt_1_rounded, size: 48, color: AppTheme.goldPrimary),
               const SizedBox(height: 16),
               Text(
-                'Join as a student',
+                'Join as a learner',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppTheme.textPrimary,
@@ -70,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Sign up with your Gmail address to start learning.',
+                'Everyone is welcome, including out-of-school youth. No school or section is required. Sign up with your Gmail address to start learning.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.4),
               ),

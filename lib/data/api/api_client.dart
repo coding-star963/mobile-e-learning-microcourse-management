@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import '../../core/media_url.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -183,7 +184,7 @@ class ApiClient {
       final uri = _buildUri(path, base, query);
       final headers = await _headers();
       final res = await http.get(uri, headers: headers).timeout(_timeout);
-      return _parseResponse(res);
+      return _parseResponse(res, base);
     } catch (e) {
       return ApiResponse(
         statusCode: 0,
@@ -202,7 +203,7 @@ class ApiClient {
       final res = await http
           .post(uri, headers: headers, body: body != null ? jsonEncode(body) : null)
           .timeout(_timeout);
-      return _parseResponse(res);
+      return _parseResponse(res, base);
     } catch (e) {
       return ApiResponse(
         statusCode: 0,
@@ -221,7 +222,7 @@ class ApiClient {
       final res = await http
           .put(uri, headers: headers, body: body != null ? jsonEncode(body) : null)
           .timeout(_timeout);
-      return _parseResponse(res);
+      return _parseResponse(res, base);
     } catch (e) {
       return ApiResponse(
         statusCode: 0,
@@ -247,7 +248,7 @@ class ApiClient {
       request.headers.addAll(headers);
       request.files.add(http.MultipartFile.fromBytes(field, bytes, filename: fileName));
       final streamed = await request.send().timeout(const Duration(seconds: 30));
-      return _parseResponse(await http.Response.fromStream(streamed));
+      return _parseResponse(await http.Response.fromStream(streamed), base);
     } catch (e) {
       return ApiResponse(
         statusCode: 0,
@@ -287,10 +288,10 @@ class ApiClient {
     return item is Map ? Map<String, dynamic>.from(item) : null;
   }
 
-  ApiResponse _parseResponse(http.Response res) {
+  ApiResponse _parseResponse(http.Response res, String requestBaseUrl) {
     dynamic decoded;
     try {
-      decoded = jsonDecode(res.body);
+      decoded = MediaUrl.resolveResponse(jsonDecode(res.body), requestBaseUrl);
     } catch (_) {
       decoded = res.body;
     }

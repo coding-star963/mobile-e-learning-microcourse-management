@@ -115,7 +115,7 @@ class _CourseWorkspaceScreenState extends State<CourseWorkspaceScreen> {
                               ? 'You are no longer enrolled — enroll again from the catalog'
                               : enrollmentOpen
                                   ? 'You are enrolled in this course'
-                                  : 'Enrollment ${enrollmentStatus!.label.toLowerCase()} — contact your teacher',
+                                  : 'Enrollment ${enrollmentStatus!.label.toLowerCase()} — contact an administrator',
                           style: TextStyle(
                             color: badgeColor,
                             fontWeight: FontWeight.w800,

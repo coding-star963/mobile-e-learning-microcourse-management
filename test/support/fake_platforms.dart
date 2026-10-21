@@ -34,6 +34,7 @@ class FakeVideoPlayer extends VideoPlayerPlatform with MockPlatformInterfaceMixi
 
   final bool failToLoad;
   final List<String> calls = [];
+  final List<DataSource> sources = [];
   final Map<int, StreamController<VideoEvent>> _events = {};
   int _nextId = 1;
 
@@ -44,6 +45,7 @@ class FakeVideoPlayer extends VideoPlayerPlatform with MockPlatformInterfaceMixi
   Future<int?> createWithOptions(VideoCreationOptions options) async {
     final id = _nextId++;
     calls.add('create ${options.dataSource.uri}');
+    sources.add(options.dataSource);
     final controller = StreamController<VideoEvent>();
     _events[id] = controller;
     if (failToLoad) {
@@ -84,6 +86,7 @@ class FakeVideoPlayer extends VideoPlayerPlatform with MockPlatformInterfaceMixi
 
   @override
   Future<void> dispose(int playerId) async {
+    calls.add('dispose $playerId');
     await _events.remove(playerId)?.close();
   }
 

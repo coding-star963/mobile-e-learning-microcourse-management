@@ -9,6 +9,7 @@ import 'data/api/rest_dashboard_repository.dart';
 import 'data/api/rest_enrollment_repository.dart';
 import 'data/api/rest_lesson_repository.dart';
 import 'data/api/rest_progress_repository.dart';
+import 'data/api/rest_quiz_repository.dart';
 import 'data/repositories/announcement_repository.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/course_repository.dart';
@@ -16,6 +17,7 @@ import 'data/repositories/dashboard_repository.dart';
 import 'data/repositories/enrollment_repository.dart';
 import 'data/repositories/lesson_repository.dart';
 import 'data/repositories/progress_repository.dart';
+import 'data/repositories/quiz_repository.dart';
 import 'providers/announcement_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/course_provider.dart';
@@ -37,6 +39,7 @@ void main() async {
         Provider<CourseRepository>(create: (_) => RestCourseRepository()),
         Provider<EnrollmentRepository>(create: (_) => RestEnrollmentRepository()),
         Provider<LessonRepository>(create: (_) => RestLessonRepository()),
+        Provider<QuizRepository>(create: (_) => RestQuizRepository()),
         Provider<AnnouncementRepository>(create: (_) => RestAnnouncementRepository()),
         Provider<DashboardRepository>(create: (_) => RestDashboardRepository()),
         Provider<ProgressRepository>(create: (_) => RestProgressRepository()),

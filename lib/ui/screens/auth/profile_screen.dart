@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/media_url.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -163,9 +165,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CircleAvatar(
                       backgroundColor: AppTheme.bgCard,
                       foregroundImage: (user?.photoUrl?.startsWith('http') ?? false)
-                          // Fallback: on web, /storage files have no CORS headers.
+                          // The API media endpoint supports cross-origin images.
                           ? NetworkImage(
                               user!.photoUrl!,
+                              headers: MediaUrl.headersFor(user.photoUrl!),
                               webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
                             )
                           : null,

@@ -267,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context,
                                 ).pushNamed('/register'),
                           child: Text(
-                            "New student? Create an account",
+                            "New learner? Create an account",
                             style: TextStyle(
                               color: AppTheme.textSecondary,
                               fontWeight: FontWeight.w600,

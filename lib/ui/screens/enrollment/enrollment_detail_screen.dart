@@ -62,7 +62,7 @@ class _EnrollmentDetailScreenState extends State<EnrollmentDetailScreen> {
       if (!stillEnrolled) {
         setState(() {
           _enrollment = null;
-          _error = 'This enrollment record was deleted by your teacher. '
+          _error = 'This enrollment record was deleted by an administrator. '
               'You can enroll again from the course catalog.';
         });
       }
